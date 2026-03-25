@@ -2,6 +2,7 @@ package com.doupark.backend.dto;
 
 public class ReservationDTO {
 
+    private Long userId;   
     private Long parkingId;
     private String plateNumber;
 
