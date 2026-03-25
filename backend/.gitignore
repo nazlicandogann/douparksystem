@@ -1,10 +1,46 @@
-HELP.md
+# =========================
+# OS / Genel
+# =========================
+.DS_Store
+*.log
+*.tmp
+
+# =========================
+# VS Code / IDE
+# =========================
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# =========================
+# Flutter / Dart
+# =========================
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+
+# =========================
+# Android (Flutter)
+# =========================
+android/.gradle/
+android/app/build/
+
+# =========================
+# iOS (Flutter)
+# =========================
+ios/Pods/
+
+# =========================
+# Java / Spring Boot
+# =========================
 target/
 .mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
-### STS ###
+# STS (Spring Tool Suite)
 .apt_generated
 .classpath
 .factorypath
@@ -13,21 +49,17 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
+
+# =========================
+# Allow rules (Spring)
+# =========================
+!**/src/main/**/target/
+!**/src/test/**/target/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-### VS Code ###
-.vscode/
