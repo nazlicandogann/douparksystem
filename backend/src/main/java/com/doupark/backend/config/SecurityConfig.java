@@ -1,48 +1,50 @@
 package com.doupark.backend.config;
 
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import com.doupark.backend.config.JwtFilter;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
+
     private final JwtFilter jwtFilter;
 
-public SecurityConfig(JwtFilter jwtFilter) {
-    this.jwtFilter = jwtFilter;
-}
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
-@Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    http
-        .csrf(csrf -> csrf.disable())
+        http
+            .csrf(csrf -> csrf.disable())
 
-        .headers(headers -> headers
-            .frameOptions(frame -> frame.disable())
-        )
+            .cors(cors -> {}) // 🔥 aktif
 
-        .sessionManagement(session ->
-            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.disable())
+            )
 
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/h2-console/**").permitAll()
-            .anyRequest().authenticated()
-        )
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
 
-        .httpBasic(httpBasic -> httpBasic.disable())
-        .formLogin(form -> form.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 🔥 kritik
+                .anyRequest().authenticated()
+            )
 
-        // 🔥 EN KRİTİK SATIR
-        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+            .httpBasic(httpBasic -> httpBasic.disable())
+            .formLogin(form -> form.disable())
 
-    return http.build();
-}
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 }

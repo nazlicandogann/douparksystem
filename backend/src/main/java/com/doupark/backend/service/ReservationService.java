@@ -1,11 +1,12 @@
 package com.doupark.backend.service;
-import java.util.List;
+
 import com.doupark.backend.entity.Parking;
 import com.doupark.backend.entity.Reservation;
 import com.doupark.backend.repository.ParkingRepository;
 import com.doupark.backend.repository.ReservationRepository;
-
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ReservationService {
@@ -38,8 +39,8 @@ public class ReservationService {
         return reservationRepository.findAll();
     }
 
-    public List<Reservation> getUserReservations(Long userId){
-        return reservationRepository.findByUserId(userId);
+    public List<Reservation> getUserReservations(String email){
+        return reservationRepository.findByUserEmail(email);
     }
 
     public void cancelReservation(Long id){

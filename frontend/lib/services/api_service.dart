@@ -3,9 +3,14 @@ import 'package:http/http.dart' as http;
 import '../models/backend/parking_api_model.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://127.0.0.1:8080/api';
+  static const String baseUrl = 'http://localhost:8080/api';
+
+  // 🔥 TEK TOKEN
   static String? token;
 
+  // ---------------------------
+  // HEADERS
+  // ---------------------------
   static Map<String, String> get _headers {
     final headers = <String, String>{
       'Content-Type': 'application/json',
@@ -18,70 +23,6 @@ class ApiService {
     return headers;
   }
 
-  static dynamic _decodeBody(http.Response response) {
-    try {
-      return response.body.isNotEmpty ? jsonDecode(response.body) : {};
-    } catch (_) {
-      return response.body;
-    }
-  }
-
-  static Map<String, dynamic> _successResponse(
-    dynamic decoded,
-    String defaultMessage,
-  ) {
-    if (decoded is Map<String, dynamic>) {
-      final receivedToken =
-          decoded['token'] ??
-          decoded['accessToken'] ??
-          decoded['access_token'] ??
-          decoded['jwt'];
-
-      if (receivedToken != null &&
-          receivedToken.toString().isNotEmpty) {
-        token = receivedToken.toString();
-      }
-
-      return {
-        'success': true,
-        'message': decoded['message'] ?? defaultMessage,
-        'data': decoded,
-      };
-    }
-
-    return {
-      'success': true,
-      'message': decoded.toString().isNotEmpty
-          ? decoded.toString()
-          : defaultMessage,
-      'data': decoded,
-    };
-  }
-
-  static Map<String, dynamic> _errorResponse(
-    dynamic decoded,
-    int statusCode,
-    String defaultMessage,
-  ) {
-    if (decoded is Map<String, dynamic>) {
-      return {
-        'success': false,
-        'message': decoded['message'] ??
-            decoded['error'] ??
-            decoded['details'] ??
-            '$defaultMessage ($statusCode)',
-        'data': decoded,
-      };
-    }
-
-    return {
-      'success': false,
-      'message': decoded.toString().isNotEmpty
-          ? decoded.toString()
-          : '$defaultMessage ($statusCode)',
-    };
-  }
-
   // ---------------------------
   // LOGIN
   // ---------------------------
@@ -91,7 +32,7 @@ class ApiService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/login2'),
+        Uri.parse('$baseUrl/auth/login'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -101,17 +42,30 @@ class ApiService {
         }),
       );
 
-      final decoded = _decodeBody(response);
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return _successResponse(decoded, 'Giriş başarılı');
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+
+        token = decoded['token']; // 🔥 TOKEN KAYDEDİLİYOR
+
+        return {
+          'success': true,
+          'message': 'Giriş başarılı',
+          'data': decoded,
+        };
       }
 
-      return _errorResponse(decoded, response.statusCode, 'Giriş başarısız');
+      return {
+        'success': false,
+        'message': 'Email veya şifre hatalı',
+      };
+
     } catch (e) {
       return {
         'success': false,
-        'message': 'Sunucuya bağlanılamadı: $e',
+        'message': 'Sunucu hatası: $e',
       };
     }
   }
@@ -139,25 +93,22 @@ class ApiService {
         }),
       );
 
-      final decoded = _decodeBody(response);
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {
           'success': true,
-          'message': decoded is Map<String, dynamic>
-              ? (decoded['message'] ?? 'Kayıt başarılı')
-              : decoded.toString().isNotEmpty
-                  ? decoded.toString()
-                  : 'Kayıt başarılı',
-          'data': decoded,
+          'message': 'Kayıt başarılı',
         };
       }
 
-      return _errorResponse(decoded, response.statusCode, 'Kayıt başarısız');
+      return {
+        'success': false,
+        'message': 'Kayıt başarısız',
+      };
+
     } catch (e) {
       return {
         'success': false,
-        'message': 'Sunucuya bağlanılamadı: $e',
+        'message': 'Sunucu hatası: $e',
       };
     }
   }
@@ -173,18 +124,10 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        final decoded = _decodeBody(response);
+        final List<dynamic> decoded = jsonDecode(response.body);
 
-        List<dynamic> rawList = [];
-
-        if (decoded is List) {
-          rawList = decoded;
-        } else if (decoded is Map<String, dynamic> && decoded['data'] is List) {
-          rawList = decoded['data'] as List<dynamic>;
-        }
-
-        return rawList
-            .map((e) => ParkingApiModel.fromJson(e as Map<String, dynamic>))
+        return decoded
+            .map((e) => ParkingApiModel.fromJson(e))
             .toList();
       }
 
@@ -192,10 +135,6 @@ class ApiService {
     } catch (e) {
       return [];
     }
-  }
-
-  static Future<List<ParkingApiModel>> getAllParking() async {
-    return getAllParkings();
   }
 
   // ---------------------------
@@ -217,29 +156,22 @@ class ApiService {
         }),
       );
 
-      final decoded = _decodeBody(response);
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {
           'success': true,
-          'message': decoded is Map<String, dynamic>
-              ? (decoded['message'] ?? 'Rezervasyon oluşturuldu')
-              : decoded.toString().isNotEmpty
-                  ? decoded.toString()
-                  : 'Rezervasyon oluşturuldu',
-          'data': decoded,
+          'message': 'Rezervasyon oluşturuldu',
         };
       }
 
-      return _errorResponse(
-        decoded,
-        response.statusCode,
-        'Rezervasyon başarısız',
-      );
+      return {
+        'success': false,
+        'message': 'Rezervasyon başarısız',
+      };
+
     } catch (e) {
       return {
         'success': false,
-        'message': 'Sunucuya bağlanılamadı: $e',
+        'message': 'Sunucu hatası: $e',
       };
     }
   }
@@ -255,15 +187,7 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        final decoded = _decodeBody(response);
-
-        if (decoded is List) {
-          return decoded;
-        }
-
-        if (decoded is Map<String, dynamic> && decoded['data'] is List) {
-          return decoded['data'];
-        }
+        return jsonDecode(response.body);
       }
 
       return [];
@@ -272,6 +196,9 @@ class ApiService {
     }
   }
 
+  // ---------------------------
+  // LOGOUT
+  // ---------------------------
   static void logout() {
     token = null;
   }
