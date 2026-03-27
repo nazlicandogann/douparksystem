@@ -1,60 +1,89 @@
-# doupark-system
-Akıllı Otopark Takip Sistemi
-🚀 Proje Açıklaması
+# 🚗 DouPark - Akıllı Otopark Sistemi
 
-DouPark, kullanıcıların otopark doluluk durumunu görüntüleyebildiği ve rezervasyon oluşturabildiği bir akıllı otopark sistemidir.
+DouPark, kullanıcıların otopark doluluk durumunu görüntüleyebildiği ve rezervasyon oluşturabildiği **fullstack bir akıllı otopark uygulamasıdır.**
 
-Bu proje fullstack olarak geliştirilmiştir:
+---
 
-Frontend: Flutter
-Backend: Spring Boot
-Veritabanı: PostgreSQL (Docker ile)
+## 🚀 Proje Özeti
 
+- 📱 **Frontend:** Flutter  
+- ⚙️ **Backend:** Spring Boot  
+- 🗄️ **Database:** PostgreSQL (Docker)  
+- 🔐 **Authentication:** JWT + BCrypt  
 
-🔐 Kimlik Doğrulama Sistemi
-Kullanıcı kayıt (register) sistemi geliştirildi
-Kullanıcı giriş (login) sistemi geliştirildi
-Şifreler BCrypt ile şifrelenerek saklandı
-JWT (JSON Web Token) ile güvenli oturum yapısı kuruldu
+---
 
-🗄️ Veritabanı
-PostgreSQL Docker container üzerinde kuruldu
-users tablosu oluşturuldu
-Kullanıcı verileri veritabanına kaydedildi
-Backend ile veritabanı bağlantısı sağlandı (Spring Data JPA)
+## 🔐 Kimlik Doğrulama
 
-🖥️ Backend (Spring Boot)
-REST API geliştirildi
-/api/auth/register → kullanıcı kayıt
-/api/auth/login → kullanıcı giriş
-JWT üretimi ve doğrulama mekanizması eklendi
-CORS ve security ayarları yapılandırıldı
+- Kullanıcı kayıt (register)
+- Kullanıcı giriş (login)
+- Şifreler BCrypt ile hashlenir
+- JWT ile güvenli oturum yönetimi
 
-📱 Frontend (Flutter)
-Login ve Register ekranları geliştirildi
-API ile bağlantı kuruldu
-HTTP istekleri ile backend’e veri gönderildi
-Kullanıcı giriş ve kayıt işlemleri arayüz üzerinden çalışır hale getirildi
+---
 
-🔄 Proje Yapısı
+## 🗄️ Veritabanı
+
+- PostgreSQL Docker container üzerinde çalışır
+- `users` tablosu oluşturulmuştur
+- Spring Data JPA ile bağlantı sağlanmıştır
+
+---
+
+## ⚙️ Backend (Spring Boot)
+
+- REST API geliştirilmiştir
+- `/api/auth/register` → kullanıcı kayıt
+- `/api/auth/login` → kullanıcı giriş
+- JWT üretimi ve doğrulama yapılır
+- CORS ve security ayarları yapılandırılmıştır
+
+---
+
+## 📱 Frontend (Flutter)
+
+- Login ve Register ekranları
+- API entegrasyonu
+- HTTP istekleri ile backend bağlantısı
+- Kullanıcı işlemleri UI üzerinden çalışır
+
+---
+
+## 📂 Proje Yapısı
 douparksystem/
- ├── backend/   → Spring Boot API
- ├── frontend/  → Flutter uygulaması
+├── backend/ # Spring Boot API
+└── frontend/ # Flutter App
 
-⚙️ Kullanılan Teknolojiler
-Java (Spring Boot)
-Flutter (Dart)
-PostgreSQL
-Docker
-JWT Authentication
+---
 
-🎯 Proje Durumu
-✔️ Kayıt ve giriş sistemi çalışıyor
-✔️ Veritabanı entegrasyonu tamamlandı
-✔️ Frontend & Backend bağlantısı sağlandı
+## 🛠️ Kullanılan Teknolojiler
 
-🚀 Geliştirme Planı
-Token saklama (kalıcı login)
-Rezervasyon sistemi geliştirme
-Kullanıcı profil ekranı
-Yetkilendirme (role-based access)
+- Java (Spring Boot)
+- Flutter (Dart)
+- PostgreSQL
+- Docker
+- JWT Authentication
+
+---
+
+## ✅ Mevcut Durum
+
+- ✔️ Kayıt sistemi çalışıyor
+- ✔️ Giriş sistemi çalışıyor
+- ✔️ Veritabanı bağlantısı aktif
+- ✔️ Frontend & Backend entegre
+
+---
+
+## 🚀 Geliştirme Planı
+
+- 🔐 Token saklama (auto login)
+- 📅 Rezervasyon sistemi
+- 👤 Kullanıcı profil ekranı
+- 🔑 Role-based authorization
+
+---
+
+## 📌 Not
+
+Bu proje fullstack geliştirme pratiği amacıyla yapılmıştır.
