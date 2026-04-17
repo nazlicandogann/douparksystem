@@ -5,7 +5,6 @@ import '../models/backend/parking_api_model.dart';
 class ApiService {
   static const String baseUrl = 'http://localhost:8080/api';
 
-  // 🔥 TEK TOKEN
   static String? token;
 
   // ---------------------------
@@ -42,31 +41,19 @@ class ApiService {
         }),
       );
 
-      print("STATUS: ${response.statusCode}");
-      print("BODY: ${response.body}");
+      print("LOGIN STATUS: ${response.statusCode}");
+      print("LOGIN BODY: ${response.body}");
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
+        token = decoded['token'];
 
-        token = decoded['token']; // 🔥 TOKEN KAYDEDİLİYOR
-
-        return {
-          'success': true,
-          'message': 'Giriş başarılı',
-          'data': decoded,
-        };
+        return {'success': true, 'data': decoded};
       }
 
-      return {
-        'success': false,
-        'message': 'Email veya şifre hatalı',
-      };
-
+      return {'success': false, 'message': 'Giriş başarısız'};
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Sunucu hatası: $e',
-      };
+      return {'success': false, 'message': e.toString()};
     }
   }
 
@@ -77,39 +64,25 @@ class ApiService {
     required String name,
     required String email,
     required String password,
-    String role = 'USER',
   }) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/register'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'name': name,
           'email': email,
           'password': password,
-          'role': role,
         }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return {
-          'success': true,
-          'message': 'Kayıt başarılı',
-        };
+        return {'success': true};
       }
 
-      return {
-        'success': false,
-        'message': 'Kayıt başarısız',
-      };
-
+      return {'success': false, 'message': 'Kayıt başarısız'};
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Sunucu hatası: $e',
-      };
+      return {'success': false, 'message': e.toString()};
     }
   }
 
@@ -141,48 +114,43 @@ class ApiService {
   // CREATE RESERVATION
   // ---------------------------
   static Future<Map<String, dynamic>> createReservation({
-    required int parkingSpotId,
+    required int parkingId,
+    required String plateNumber,
     required String startTime,
     required String endTime,
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/reservation/create'),
+        Uri.parse('$baseUrl/reservations'), // 🔥 DOĞRU ENDPOINT
         headers: _headers,
         body: jsonEncode({
-          'parkingSpotId': parkingSpotId,
+          'parkingId': parkingId,
+          'plateNumber': plateNumber,
           'startTime': startTime,
           'endTime': endTime,
         }),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return {
-          'success': true,
-          'message': 'Rezervasyon oluşturuldu',
-        };
+      print("RES STATUS: ${response.statusCode}");
+      print("RES BODY: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return {'success': true};
       }
 
-      return {
-        'success': false,
-        'message': 'Rezervasyon başarısız',
-      };
-
+      return {'success': false, 'message': response.body};
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Sunucu hatası: $e',
-      };
+      return {'success': false, 'message': e.toString()};
     }
   }
 
   // ---------------------------
-  // GET RESERVATIONS
+  // GET MY RESERVATIONS
   // ---------------------------
-  static Future<List<dynamic>> getReservations() async {
+  static Future<List<dynamic>> getMyReservations() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/reservation/all'),
+        Uri.parse('$baseUrl/reservations'), // 🔥 DOĞRU
         headers: _headers,
       );
 
@@ -193,6 +161,22 @@ class ApiService {
       return [];
     } catch (e) {
       return [];
+    }
+  }
+
+  // ---------------------------
+  // CANCEL RESERVATION
+  // ---------------------------
+  static Future<bool> cancelReservation(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/reservations/$id'),
+        headers: _headers,
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
     }
   }
 

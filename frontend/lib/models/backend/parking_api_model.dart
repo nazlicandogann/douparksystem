@@ -4,7 +4,7 @@ class ParkingApiModel {
   final int totalSpots;
   final int availableSpots;
 
-  const ParkingApiModel({
+  ParkingApiModel({
     required this.id,
     required this.location,
     required this.totalSpots,
@@ -13,24 +13,10 @@ class ParkingApiModel {
 
   factory ParkingApiModel.fromJson(Map<String, dynamic> json) {
     return ParkingApiModel(
-      id: json['id'] ?? 0,
-      location: json['location'] ?? '',
-      totalSpots: json['totalSpots'] ?? 0,
-      availableSpots: json['availableSpots'] ?? 0,
+      id: json['id'],
+      location: json['location'],
+      totalSpots: json['totalSpots'],
+      availableSpots: json['availableSpots'],
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'location': location,
-      'totalSpots': totalSpots,
-      'availableSpots': availableSpots,
-    };
-  }
-
-  @override
-  String toString() {
-    return 'ParkingApiModel(id: $id, location: $location, totalSpots: $totalSpots, availableSpots: $availableSpots)';
   }
 }

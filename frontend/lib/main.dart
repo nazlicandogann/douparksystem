@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/login_screen.dart';
-
+import 'screens/home_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 void main() {
   runApp(const DouParkApp());
 }
@@ -23,10 +24,11 @@ class DouParkApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: ThemeData(
-        primarySwatch: Colors.red,
-      ),
-      home: const LoginScreen(),
+ theme: ThemeData(
+  primarySwatch: Colors.red,
+  textTheme: GoogleFonts.poppinsTextTheme(),
+),
+      home: const HomeScreen(),
     );
   }
 }

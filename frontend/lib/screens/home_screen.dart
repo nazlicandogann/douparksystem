@@ -1,347 +1,306 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
-import '../services/parking_store.dart';
+import 'login_screen.dart';
+import 'register_screen.dart';
+import 'create_reservation_screen.dart';
+import '../services/api_service.dart';
+import '../models/backend/parking_api_model.dart';
+import '../services/auth_service.dart';
 
-class HomeScreen extends StatelessWidget {
-  final VoidCallback? onCreateReservationTap;
-  final VoidCallback? onReservationsTap;
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
-  const HomeScreen({
-    super.key,
-    this.onCreateReservationTap,
-    this.onReservationsTap,
-  });
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int selectedTab = 0;
+  List<ParkingApiModel> parkings = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadParkings();
+  }
+
+  Future<void> loadParkings() async {
+    final data = await ApiService.getAllParkings();
+    setState(() {
+      parkings = data;
+      isLoading = false;
+    });
+  }
+
+  // ✅ _getColor is now properly inside the class
+  Color _getColor(double percent) {
+    if (percent > 0.6) return Colors.green;    // çok boş
+    if (percent > 0.3) return Colors.blue;  // orta
+    return Colors.red;                        // dolu
+  }
+
+  Widget buildTab(String text, int index) {
+    final isActive = selectedTab == index;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedTab = index;
+        });
+      },
+      child: Column(
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: isActive ? Colors.black : Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 6),
+          if (isActive)
+            Container(
+              height: 3,
+              width: 40,
+              color: const Color(0xFFD32F2F),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildContent() {
+    switch (selectedTab) {
+      case 0:
+        return const Padding(
+          padding: EdgeInsets.all(20),
+          child: Text(
+            "DouPark ile QR giriş, anlık doluluk ve rezervasyon yapabilirsiniz.",
+          ),
+        );
+
+      case 1:
+        // ✅ Loading state
+        if (isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        // ✅ Single merged case 1 — progress bar view
+        return Column(
+          children: parkings.map((p) {
+            const int total = 100; // SABİT kapasite
+            final int empty = p.availableSpots;
+            final double percent = empty / total;
+            final int percentText = (percent * 100).toInt();
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ÜST SATIR
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        p.location,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        "%$percentText boş",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // BAR
+                  Stack(
+                    children: [
+                      Container(
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      FractionallySizedBox(
+                        widthFactor: percent.clamp(0.0, 1.0), // ✅ güvenli clamp
+                        child: Container(
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: _getColor(percent),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // ALT YAZI
+                  Text(
+                    "$empty / $total boş",
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey,
+                    ),
+                  ),
+
+                  const Divider(height: 25),
+                ],
+              ),
+            );
+          }).toList(),
+        );
+
+      case 2:
+        return const Padding(
+          padding: EdgeInsets.all(20),
+          child: Text("0-60 Dakika: Ücretsiz\n1-3 Saat: 150₺\n3-6 Saat: 250₺\nGün Boyu:300"),
+        );
+
+      case 3:
+        return Center(
+          child: ElevatedButton(
+            onPressed: () {
+              if (!AuthService.isLoggedIn) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                ).then((value) {
+                  if (value == true) {
+                    setState(() {});
+                  }
+                });
+                return;
+              }
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CreateReservationScreen(),
+                ),
+              );
+            },
+            child: const Text("Rezervasyon Yap"),
+          ),
+        );
+
+      default:
+        return const SizedBox();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final aAvailable = ParkingStore.getAvailableCount('A Blok');
-    final aOccupied = ParkingStore.getOccupiedCount('A Blok');
-    final aReserved = ParkingStore.getReservedCount('A Blok');
-
-    final bAvailable = ParkingStore.getAvailableCount('B Blok');
-    final bOccupied = ParkingStore.getOccupiedCount('B Blok');
-    final bReserved = ParkingStore.getReservedCount('B Blok');
-
-    final cAvailable = ParkingStore.getAvailableCount('C Blok');
-    final cOccupied = ParkingStore.getOccupiedCount('C Blok');
-    final cReserved = ParkingStore.getReservedCount('C Blok');
-
-    final dAvailable = ParkingStore.getAvailableCount('D Blok');
-    final dOccupied = ParkingStore.getOccupiedCount('D Blok');
-    final dReserved = ParkingStore.getReservedCount('D Blok');
-
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
         title: const Text(
-          'DouPark',
+          "DouPark",
           style: TextStyle(
+            color: Color(0xFFD32F2F),
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            fontSize: 26,
           ),
         ),
-        backgroundColor: AppColors.primary,
-        centerTitle: true,
-        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code, color: Color(0xFFD32F2F)),
+            onPressed: () {
+              print("QR açıldı");
+            },
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+            child: const Text("Giriş"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const RegisterScreen()),
+              );
+            },
+            child: const Text(
+              "Kayıt Ol",
+              style: TextStyle(color: Color(0xFFD32F2F)),
+            ),
+          ),
+          const SizedBox(width: 10),
+        ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildWelcomeCard(),
+            // HERO
+            Container(
+              height: 250,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(
+                    "https://images.unsplash.com/photo-1583267746897-2cf415887172",
+                  ),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Container(
+                color: Colors.black.withOpacity(0.4),
+                child: const Center(
+                  child: Text(
+                    "DouPark\nAkıllı Otopark Sistemi",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
             const SizedBox(height: 20),
-            const Text(
-              'Otopark Durumu',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
+
+            // TABS
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                buildTab("Bilgi", 0),
+                const SizedBox(width: 30),
+                buildTab("Uygunluk", 1),
+                const SizedBox(width: 30),
+                buildTab("Fiyat Listesi", 2),
+                const SizedBox(width: 30),
+                buildTab("Rezervasyon", 3),
+              ],
             ),
-            const SizedBox(height: 12),
-            _buildParkingCard(
-              title: 'A Blok',
-              available: aAvailable,
-              occupied: aOccupied,
-              reserved: aReserved,
-            ),
-            const SizedBox(height: 12),
-            _buildParkingCard(
-              title: 'B Blok',
-              available: bAvailable,
-              occupied: bOccupied,
-              reserved: bReserved,
-            ),
-            const SizedBox(height: 12),
-            _buildParkingCard(
-              title: 'C Blok',
-              available: cAvailable,
-              occupied: cOccupied,
-              reserved: cReserved,
-            ),
-            const SizedBox(height: 12),
-            _buildParkingCard(
-              title: 'D Blok',
-              available: dAvailable,
-              occupied: dOccupied,
-              reserved: dReserved,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: onCreateReservationTap,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                icon: const Icon(Icons.add_circle_outline),
-                label: const Text(
-                  'Rezervasyon Oluştur',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: onReservationsTap,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: AppColors.primary),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                icon: const Icon(Icons.calendar_month_outlined),
-                label: const Text(
-                  'Rezervasyonlarım',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            _buildLegendCard(),
+
+            const SizedBox(height: 30),
+
+            // CONTENT
+            buildContent(),
+
+            const SizedBox(height: 50),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildWelcomeCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'DouPark\'a Hoş Geldin',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Otopark doluluk durumunu görüntüleyebilir ve hızlıca rezervasyon oluşturabilirsin.',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              height: 1.4,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildParkingCard({
-    required String title,
-    required int available,
-    required int occupied,
-    required int reserved,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatusBox(
-                  label: 'Boş',
-                  value: available.toString(),
-                  color: Colors.green,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildStatusBox(
-                  label: 'Dolu',
-                  value: occupied.toString(),
-                  color: Colors.red,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildStatusBox(
-                  label: 'Rezerve',
-                  value: reserved.toString(),
-                  color: Colors.yellow.shade700,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusBox({
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.35)),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLegendCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Renk Açıklaması',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          SizedBox(height: 12),
-          _LegendItem(color: Colors.green, text: 'Boş park yeri'),
-          SizedBox(height: 8),
-          _LegendItem(color: Colors.red, text: 'Dolu park yeri'),
-          SizedBox(height: 8),
-          _LegendItem(color: Colors.orange, text: 'Rezerve park yeri'),
-        ],
-      ),
-    );
-  }
-}
-
-class _LegendItem extends StatelessWidget {
-  final Color color;
-  final String text;
-
-  const _LegendItem({
-    required this.color,
-    required this.text,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Text(
-          text,
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppColors.textPrimary,
-          ),
-        ),
-      ],
     );
   }
 }

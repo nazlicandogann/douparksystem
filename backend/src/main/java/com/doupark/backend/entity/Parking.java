@@ -11,15 +11,14 @@ public class Parking {
 
     private String location;
     private int totalSpots;
-    private int availableSpots;
+   
 
     public Parking() {}
 
-    public Parking(String location, int totalSpots, int availableSpots) {
-        this.location = location;
-        this.totalSpots = totalSpots;
-        this.availableSpots = availableSpots;
-    }
+    public Parking(String location, int totalSpots) {
+    this.location = location;
+    this.totalSpots = totalSpots;
+}
 
     public Long getId() {
         return id;
@@ -33,10 +32,7 @@ public class Parking {
         return totalSpots;
     }
 
-    public int getAvailableSpots() {
-        return availableSpots;
-    }
-
+ 
     public void setLocation(String location) {
         this.location = location;
     }
@@ -45,7 +41,4 @@ public class Parking {
         this.totalSpots = totalSpots;
     }
 
-    public void setAvailableSpots(int availableSpots) {
-        this.availableSpots = availableSpots;
-    }
 }

@@ -2,51 +2,61 @@ package com.doupark.backend.controller;
 
 import com.doupark.backend.entity.Reservation;
 import com.doupark.backend.service.ReservationService;
-import com.doupark.backend.dto.ReservationDTO;
-import com.doupark.backend.util.JwtUtil;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reservation")
+@RequestMapping("/api/reservations")
+@CrossOrigin(origins = "*")
 public class ReservationController {
 
     private final ReservationService reservationService;
-    private final JwtUtil jwtUtil;
 
-    public ReservationController(ReservationService reservationService, JwtUtil jwtUtil) {
+    public ReservationController(ReservationService reservationService) {
         this.reservationService = reservationService;
-        this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping("/create")
-    public Reservation createReservation(
-            @RequestBody ReservationDTO dto,
-            @RequestHeader("Authorization") String token){
+    //  CREATE
+    @PostMapping
+    public ResponseEntity<?> createReservation(
+            @RequestBody Reservation reservation,
+            Authentication auth) {
 
-        String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+        String email = auth.getName(); //  JWT'den otomatik geliyor
 
-        Reservation reservation = new Reservation();
-        reservation.setUserEmail(email);
-        reservation.setParkingId(dto.getParkingId());
-        reservation.setPlateNumber(dto.getPlateNumber());
-
-        return reservationService.createReservation(reservation);
+        return ResponseEntity.ok(
+                reservationService.createReservation(reservation, email)
+        );
     }
 
+    // USER RESERVATIONS
+    @GetMapping
+    public ResponseEntity<List<Reservation>> getMyReservations(Authentication auth) {
+
+        String email = auth.getName();
+
+        return ResponseEntity.ok(
+                reservationService.getUserReservations(email)
+        );
+    }
+
+    //  ALL
     @GetMapping("/all")
-    public List<Reservation> getAllReservations(){
-        return reservationService.getAllReservations();
+    public ResponseEntity<List<Reservation>> getAllReservations() {
+        return ResponseEntity.ok(
+                reservationService.getAllReservations()
+        );
     }
 
-    @GetMapping("/user/{email}")
-    public List<Reservation> getUserReservations(@PathVariable String email){
-        return reservationService.getUserReservations(email);
-    }
-
+    //  DELETE
     @DeleteMapping("/{id}")
-    public void cancelReservation(@PathVariable Long id){
+    public ResponseEntity<?> cancelReservation(@PathVariable Long id) {
+
         reservationService.cancelReservation(id);
+
+        return ResponseEntity.ok("Reservation cancelled");
     }
 }

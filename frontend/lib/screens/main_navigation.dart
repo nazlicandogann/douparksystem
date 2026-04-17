@@ -20,14 +20,11 @@ class _MainNavigationState extends State<MainNavigation> {
     });
   }
 
-  late final List<Widget> _screens = [
-    HomeScreen(
-      onCreateReservationTap: () => _changeTab(1),
-      onReservationsTap: () => _changeTab(2),
-    ),
-    const CreateReservationScreen(),
-    const ReservationsScreen(),
-  ];
+ late final List<Widget> _screens = [
+  const HomeScreen(),
+  const CreateReservationScreen(),
+  const ReservationsScreen(),
+];
 
   @override
   Widget build(BuildContext context) {

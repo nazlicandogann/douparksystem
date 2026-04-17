@@ -3,6 +3,7 @@ import 'main_navigation.dart';
 import 'register_screen.dart';
 import '../theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -72,18 +73,15 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (result['success'] == true) {
+      AuthService.login();
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message'] ?? "Giriş başarılı"),
         ),
       );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const MainNavigation(),
-        ),
-      );
+      Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -92,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     }
-  }
+  }                                          
 
   @override
   void dispose() {
@@ -234,4 +232,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
+}                                     

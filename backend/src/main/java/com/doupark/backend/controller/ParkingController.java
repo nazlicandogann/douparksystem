@@ -8,6 +8,7 @@ import com.doupark.backend.service.ParkingService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;                          // ✅ Missing import added
 
 @RestController
 @RequestMapping("/api/parking")
@@ -17,7 +18,6 @@ public class ParkingController {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    // ✅ TEK CONSTRUCTOR
     public ParkingController(ParkingService parkingService,
                              UserRepository userRepository,
                              JwtUtil jwtUtil) {
@@ -45,17 +45,17 @@ public class ParkingController {
     }
 
     @GetMapping("/all")
-    public List<Parking> getAllParkings(){
+    public List<Map<String, Object>> getAllParkings() {
         return parkingService.getAllParkings();
     }
 
     @GetMapping("/{id}")
-    public Parking getParking(@PathVariable Long id){
+    public Parking getParking(@PathVariable Long id) {
         return parkingService.getParkingById(id);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteParking(@PathVariable Long id){
+    public void deleteParking(@PathVariable Long id) {
         parkingService.deleteParking(id);
     }
 }
