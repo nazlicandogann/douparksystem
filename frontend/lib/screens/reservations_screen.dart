@@ -141,25 +141,34 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Park ID: ${r['parkingId']}",
+            // Backend nested obje döndürür: { "parking": { "id": 1, "location": "..." } }
+            "Park: ${r['parking']?['location'] ?? 'ID: ${r['parking']?['id']}'}",
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          Text("Plaka: ${r['plateNumber']}"),
+          Text("Plaka: ${r['plateNumber'] ?? '-'}"),
           const SizedBox(height: 8),
-          Text("Başlangıç: ${r['startTime']}"),
+          Text("Başlangıç: ${r['startTime'] ?? '-'}"),
           const SizedBox(height: 8),
-          Text("Bitiş: ${r['endTime']}"),
+          Text("Bitiş: ${r['endTime'] ?? '-'}"),
+          const SizedBox(height: 4),
+          Text(
+            "Durum: ${r['status'] ?? '-'}",
+            style: TextStyle(
+              color: r['status'] == 'ACTIVE' ? Colors.green : Colors.grey,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 12),
 
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () async {
-                await ApiService.cancelReservation(r['id']);
+                await ApiService.cancelReservation(r['id'] as int);
                 loadReservations();
               },
               icon: const Icon(Icons.delete),

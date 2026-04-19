@@ -11,34 +11,19 @@ public class Parking {
 
     private String location;
     private int totalSpots;
-   
 
     public Parking() {}
 
     public Parking(String location, int totalSpots) {
-    this.location = location;
-    this.totalSpots = totalSpots;
-}
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public int getTotalSpots() {
-        return totalSpots;
-    }
-
- 
-    public void setLocation(String location) {
         this.location = location;
-    }
-
-    public void setTotalSpots(int totalSpots) {
         this.totalSpots = totalSpots;
     }
 
+    public Long getId() { return id; }
+    public String getLocation() { return location; }
+    public int getTotalSpots() { return totalSpots; }
+
+    public void setId(Long id) { this.id = id; }
+    public void setLocation(String location) { this.location = location; }
+    public void setTotalSpots(int totalSpots) { this.totalSpots = totalSpots; }
 }

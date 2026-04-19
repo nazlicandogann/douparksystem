@@ -8,6 +8,7 @@ import com.doupark.backend.repository.ReservationRepository;
 import com.doupark.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -26,49 +27,56 @@ public class ReservationService {
     }
 
     // CREATE
-    public Reservation createReservation(Reservation reservation, String email){
+    public Reservation createReservation(Reservation reservation, String email) {
 
-        // USER BUL
+        // JWT'den gelen email ile user bul
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        reservation.setUser(user);
 
-        reservation.setUser(user); // EN KRİTİK SATIR
-
-        Parking parking = parkingRepository.findById(reservation.getParkingId())
+        // Reservation içindeki parking nesnesinden id al
+        Parking parking = parkingRepository.findById(reservation.getParking().getId())
                 .orElseThrow(() -> new RuntimeException("Parking not found"));
+        reservation.setParking(parking);
 
-        if (parking.getAvailableSpots() <= 0) {
+        // Mevcut aktif rezervasyon sayısını hesapla (availableSpots alanı olmadığı için dinamik)
+        long activeCount = reservationRepository.countByParking_IdAndStatus(parking.getId(), "ACTIVE");
+        int availableSpots = parking.getTotalSpots() - (int) activeCount;
+
+        if (availableSpots <= 0) {
             throw new RuntimeException("No parking spot available");
         }
 
-        parking.setAvailableSpots(parking.getAvailableSpots() - 1);
-        parkingRepository.save(parking);
+        // Status ve zaman set et
+        reservation.setStatus("ACTIVE");
+        if (reservation.getStartTime() == null) {
+            reservation.setStartTime(LocalDateTime.now());
+        }
 
         return reservationRepository.save(reservation);
     }
 
     // TÜMÜ (ADMIN için)
-    public List<Reservation> getAllReservations(){
+    public List<Reservation> getAllReservations() {
         return reservationRepository.findAll();
     }
 
-    // USER’A GÖRE
-    public List<Reservation> getUserReservations(String email){
+    // USER'A GÖRE
+    public List<Reservation> getUserReservations(String email) {
         return reservationRepository.findByUser_Email(email);
     }
 
     // CANCEL
-    public void cancelReservation(Long id){
+    public void cancelReservation(Long id) {
 
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reservation not found"));
 
-        Parking parking = parkingRepository.findById(reservation.getParkingId())
-                .orElseThrow(() -> new RuntimeException("Parking not found"));
-
-        parking.setAvailableSpots(parking.getAvailableSpots() + 1);
-        parkingRepository.save(parking);
-
-        reservationRepository.deleteById(id);
+        // Status DONE yap, bitiş zamanı ekle
+        // availableSpots DB'de tutulmadığından güncellemeye gerek yok,
+        // count query otomatik olarak düşük gösterecek
+        reservation.setStatus("DONE");
+        reservation.setEndTime(LocalDateTime.now());
+        reservationRepository.save(reservation);
     }
 }

@@ -5,6 +5,7 @@ import 'create_reservation_screen.dart';
 import '../services/api_service.dart';
 import '../models/backend/parking_api_model.dart';
 import '../services/auth_service.dart';
+import '../services/user_store.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -88,8 +89,8 @@ class _HomeScreenState extends State<HomeScreen> {
         // ✅ Single merged case 1 — progress bar view
         return Column(
           children: parkings.map((p) {
-            const int total = 100; // SABİT kapasite
-            final int empty = p.availableSpots;
+            final int total = p.totalSpots > 0 ? p.totalSpots : 1;
+            final int empty = p.availableSpots.clamp(0, total);
             final double percent = empty / total;
             final int percentText = (percent * 100).toInt();
 
@@ -221,27 +222,38 @@ class _HomeScreenState extends State<HomeScreen> {
               print("QR açıldı");
             },
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
-            },
-            child: const Text("Giriş"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const RegisterScreen()),
-              );
-            },
-            child: const Text(
-              "Kayıt Ol",
-              style: TextStyle(color: Color(0xFFD32F2F)),
+          if (AuthService.isLoggedIn) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+              child: Text(
+                UserStore.fullName.isNotEmpty ? UserStore.fullName : "Kullanıcı",
+                style: const TextStyle(color: Colors.black87),
+              ),
             ),
-          ),
+            TextButton(
+              onPressed: () {
+                AuthService.logout();
+                ApiService.logout();
+                UserStore.clear();
+                setState(() {});
+              },
+              child: const Text("Çıkış", style: TextStyle(color: Color(0xFFD32F2F))),
+            ),
+          ] else ...[
+            TextButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()))
+                    .then((value) { if (value == true) setState(() {}); });
+              },
+              child: const Text("Giriş"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
+              },
+              child: const Text("Kayıt Ol", style: TextStyle(color: Color(0xFFD32F2F))),
+            ),
+          ],
           const SizedBox(width: 10),
         ],
       ),
