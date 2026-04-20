@@ -8,15 +8,13 @@ import java.util.List;
 
 public interface ParkingRepository extends JpaRepository<Parking, Long> {
 
-    @Query("""
-    SELECT p.id,
-           p.location,
-           p.totalSpots,
-           (p.totalSpots - COUNT(r.id))
-    FROM Parking p
-    LEFT JOIN Reservation r
-    ON p.id = r.parking.id AND r.status = 'ACTIVE'
-    GROUP BY p.id
-    """)
-    List<Object[]> getAllWithAvailable();
+   @Query("""
+SELECT p.id, p.location, p.totalSpots,
+(p.totalSpots - COUNT(r.id))
+FROM Parking p
+LEFT JOIN Reservation r 
+ON r.parking = p AND r.status = 'ACTIVE'
+GROUP BY p.id
+""")
+List<Object[]> getAllWithAvailable();
 }

@@ -16,17 +16,16 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()  // login/register açık
-                .anyRequest().authenticated()                 // geri kalanı JWT ister
-            )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/auth/**").permitAll()   // LOGIN İÇİN
+            .requestMatchers("/api/parking/**").permitAll()
+            .anyRequest().authenticated()
+        );
 
-        return http.build();
-    }
+    return http.build();
+}
 }
