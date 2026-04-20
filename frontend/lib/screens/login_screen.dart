@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'register_screen.dart';
+import 'main_navigation.dart';
 import '../theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
@@ -57,31 +58,56 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    setState(() { isLoading = true; });
+    setState(() {
+      isLoading = true;
+    });
 
-    final result = await ApiService.login(email: email, password: password);
+    try {
+      final result = await ApiService.login(email: email, password: password);
 
-    if (!mounted) return;
-    setState(() { isLoading = false; });
+      if (!mounted) return;
 
-    if (result['success'] == true) {
-      final data = result['data'];
+      setState(() {
+        isLoading = false;
+      });
 
-      // ✅ UserStore'u backend'den gelen gerçek bilgilerle doldur
-      UserStore.setFromLogin(
-        name: data['name'] ?? '',
-        userEmail: data['email'] ?? email,
-      );
-      AuthService.login();
+      if (result['success'] == true) {
+        final data = result['data'] ?? {};
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Giriş başarılı")),
-      );
-      Navigator.pop(context, true);
-    } else {
+        UserStore.setFromLogin(
+          name: data['name'] ?? '',
+          userEmail: data['email'] ?? email,
+        );
+
+        AuthService.login();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Giriş başarılı")),
+        );
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const MainNavigation()),
+          (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? "Giriş başarısız"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        isLoading = false;
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'] ?? "Giriş başarısız"),
+          content: Text("Bir hata oluştu: $e"),
           backgroundColor: Colors.red,
         ),
       );
@@ -117,23 +143,39 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SizedBox(height: 10),
-                      const Icon(Icons.local_parking_rounded, color: AppColors.red, size: 60),
+                      const Icon(
+                        Icons.local_parking_rounded,
+                        color: AppColors.red,
+                        size: 60,
+                      ),
                       const SizedBox(height: 12),
                       const Center(
-                        child: Text("DouPark",
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.red),
+                        child: Text(
+                          "DouPark",
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.red,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),
                       const Center(
-                        child: Text("E-posta ile giriş yap",
-                          style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
+                        child: Text(
+                          "E-posta ile giriş yap",
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 28),
                       TextField(
                         controller: emailController,
-                        decoration: customInputDecoration(hintText: "E-posta", icon: Icons.email_outlined),
+                        decoration: customInputDecoration(
+                          hintText: "E-posta",
+                          icon: Icons.email_outlined,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       TextField(
@@ -143,8 +185,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           hintText: "Şifre",
                           icon: Icons.lock_outline,
                           suffixIcon: IconButton(
-                            icon: Icon(obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
-                            onPressed: () => setState(() { obscurePassword = !obscurePassword; }),
+                            icon: Icon(
+                              obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                obscurePassword = !obscurePassword;
+                              });
+                            },
                           ),
                         ),
                       ),
@@ -156,18 +207,42 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.red,
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
                           child: isLoading
-                              ? const SizedBox(width: 24, height: 24,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                              : const Text("Giriş Yap", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : const Text(
+                                  "Giriş Yap",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 16),
                       TextButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                        child: const Text("Hesabın yok mu? Kayıt ol", style: TextStyle(color: AppColors.red)),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const RegisterScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Hesabın yok mu? Kayıt ol",
+                          style: TextStyle(color: AppColors.red),
+                        ),
                       ),
                     ],
                   ),
