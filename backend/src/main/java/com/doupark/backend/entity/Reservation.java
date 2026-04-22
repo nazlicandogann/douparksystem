@@ -10,7 +10,7 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔥 PARKING RELATION (KRİTİK)
+    //  PARKING RELATION (KRİTİK)
     @ManyToOne
     @JoinColumn(name = "parking_id")
     private Parking parking;
@@ -22,7 +22,7 @@ public class Reservation {
 
     private String status; // ACTIVE / DONE
 
-    // 🔥 USER RELATION
+    //  USER RELATION
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
