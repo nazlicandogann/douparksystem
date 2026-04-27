@@ -85,11 +85,8 @@ class _LoginScreenState extends State<LoginScreen> {
           const SnackBar(content: Text("Giriş başarılı")),
         );
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const MainNavigation()),
-          (route) => false,
-        );
+        // MainNavigation zaten root'ta, sadece geri dön ve yenile
+        Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects; 
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
@@ -28,18 +30,14 @@ public class ReservationService {
 
     // CREATE
     public Reservation createReservation(Reservation reservation, String email) {
-
-        // JWT'den gelen email ile user bul
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         reservation.setUser(user);
 
-        // Reservation içindeki parking nesnesinden id al
         Parking parking = parkingRepository.findById(reservation.getParking().getId())
                 .orElseThrow(() -> new RuntimeException("Parking not found"));
         reservation.setParking(parking);
 
-        // Mevcut aktif rezervasyon sayısını hesapla (availableSpots alanı olmadığı için dinamik)
         long activeCount = reservationRepository.countByParking_IdAndStatus(parking.getId(), "ACTIVE");
         int availableSpots = parking.getTotalSpots() - (int) activeCount;
 
@@ -47,7 +45,6 @@ public class ReservationService {
             throw new RuntimeException("No parking spot available");
         }
 
-        // Status ve zaman set et
         reservation.setStatus("ACTIVE");
         if (reservation.getStartTime() == null) {
             reservation.setStartTime(LocalDateTime.now());
@@ -68,15 +65,21 @@ public class ReservationService {
 
     // CANCEL
     public void cancelReservation(Long id) {
-
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reservation not found"));
 
-        // Status DONE yap, bitiş zamanı ekle
-        // availableSpots DB'de tutulmadığından güncellemeye gerek yok,
-        // count query otomatik olarak düşük gösterecek
         reservation.setStatus("DONE");
         reservation.setEndTime(LocalDateTime.now());
         reservationRepository.save(reservation);
+    }
+
+    // DOLU KOLTUKLARI GETİR
+    public List<Integer> getOccupiedSpotIndices(Long parkingId) {
+        // findByParkingId metodunu Repository'ye eklemelisin!
+        return reservationRepository.findByParkingId(parkingId).stream()
+                .filter(r -> "ACTIVE".equals(r.getStatus()))
+                .map(Reservation::getSelectedSpotIndex)
+                .filter(Objects::nonNull) // Objects import edildiği için artık hata vermez
+                .collect(Collectors.toList());
     }
 }

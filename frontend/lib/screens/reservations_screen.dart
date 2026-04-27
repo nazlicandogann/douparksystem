@@ -164,6 +164,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
           ),
           const SizedBox(height: 12),
 
+          if (r['status'] == 'ACTIVE')
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(

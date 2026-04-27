@@ -4,10 +4,10 @@ import com.doupark.backend.entity.Parking;
 import com.doupark.backend.repository.ParkingRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;                          // ✅ Missing import added
-import java.util.stream.Collectors;            // ✅ Cleaner import
+import java.util.Map;
 
 @Service
 public class ParkingService {
@@ -23,17 +23,20 @@ public class ParkingService {
     }
 
     public List<Map<String, Object>> getAllParkings() {
-
         List<Object[]> data = parkingRepository.getAllWithAvailable();
+        List<Map<String, Object>> result = new ArrayList<>();
 
-        return data.stream().map(row -> {
+        for (Object[] row : data) {
             Map<String, Object> map = new HashMap<>();
-            map.put("id",             row[0]);
-            map.put("location",       row[1]);
-            map.put("totalSpots",     row[2]);
-            map.put("availableSpots", row[3]);
-            return map;
-        }).collect(Collectors.toList());        // ✅ Cleaner, no inline class ref
+            // Native SQL'den gelen değerler BigInteger/BigDecimal/Long olabilir
+            // Her birini Number cast ile güvenle okuyoruz
+            map.put("id",             row[0] != null ? ((Number) row[0]).longValue() : 0L);
+            map.put("parkingName",    row[1] != null ? row[1].toString() : "Bilinmeyen Otopark");
+            map.put("totalSpots",     row[2] != null ? ((Number) row[2]).intValue() : 0);
+            map.put("availableSpots", row[3] != null ? ((Number) row[3]).intValue() : 0);
+            result.add(map);
+        }
+        return result;
     }
 
     public Parking getParkingById(Long id) {

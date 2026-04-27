@@ -13,10 +13,12 @@ class ParkingApiModel {
 
   factory ParkingApiModel.fromJson(Map<String, dynamic> json) {
     return ParkingApiModel(
-      id: json['id'],
-      location: json['location'],
-      totalSpots: json['totalSpots'],
-      availableSpots: json['availableSpots'],
+      id:             (json['id']             as num?)?.toInt() ?? 0,
+      location:        json['parkingName']?.toString() ??
+                       json['location']?.toString() ??
+                       'Bilinmeyen Blok',
+      totalSpots:     (json['totalSpots']     as num?)?.toInt() ?? 0,
+      availableSpots: (json['availableSpots'] as num?)?.toInt() ?? 0,
     );
   }
 }

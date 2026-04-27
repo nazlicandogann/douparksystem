@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../services/auth_service.dart';
 import 'home_screen.dart';
 import 'create_reservation_screen.dart';
 import 'reservations_screen.dart';
+import 'login_screen.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -15,16 +17,31 @@ class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
 
   void _changeTab(int index) {
+    // Oluştur (1) ve Rezervasyonlar (2) için giriş gerekli
+    if ((index == 1 || index == 2) && !AuthService.isLoggedIn) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      ).then((_) {
+        // Giriş yapıldıysa ilgili sekmeye git
+        if (AuthService.isLoggedIn) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        }
+      });
+      return;
+    }
     setState(() {
       _selectedIndex = index;
     });
   }
 
- late final List<Widget> _screens = [
-  const HomeScreen(),
-  const CreateReservationScreen(),
-  const ReservationsScreen(),
-];
+  late final List<Widget> _screens = [
+    const HomeScreen(),
+    const CreateReservationScreen(),
+    const ReservationsScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {

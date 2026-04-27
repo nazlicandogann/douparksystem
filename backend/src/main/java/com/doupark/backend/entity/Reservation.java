@@ -10,7 +10,6 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //  PARKING RELATION (KRİTİK)
     @ManyToOne
     @JoinColumn(name = "parking_id")
     private Parking parking;
@@ -22,7 +21,8 @@ public class Reservation {
 
     private String status; // ACTIVE / DONE
 
-    //  USER RELATION
+    private Integer selectedSpotIndex;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -58,6 +58,10 @@ public class Reservation {
         return user;
     }
 
+    public Integer getSelectedSpotIndex() {
+        return selectedSpotIndex;
+    }
+
     // SETTERS
     public void setParking(Parking parking) {
         this.parking = parking;
@@ -81,5 +85,9 @@ public class Reservation {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public void setSelectedSpotIndex(Integer selectedSpotIndex) {
+        this.selectedSpotIndex = selectedSpotIndex;
     }
 }

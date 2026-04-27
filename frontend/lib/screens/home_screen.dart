@@ -26,6 +26,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> loadParkings() async {
+    if (!mounted) return;
+    setState(() { isLoading = true; });
     try {
       final data = await ApiService.getAllParkings();
       if (!mounted) return;
@@ -34,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
         isLoading = false;
       });
     } catch (e) {
+      debugPrint("loadParkings HATA: \$e");
       if (!mounted) return;
       setState(() {
         isLoading = false;
@@ -217,8 +220,11 @@ class _HomeScreenState extends State<HomeScreen> {
               fit: StackFit.expand,
               children: [
                 Image.asset(
-                  'assets/images/car_banner.jpg',
+                  'assets/car_banner.jpg',
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(color: const Color(0xFF8B0000));
+                  },
                 ),
                 Container(
                   color: Colors.black.withOpacity(0.30),
@@ -267,100 +273,6 @@ class _HomeScreenState extends State<HomeScreen> {
           fontWeight: FontWeight.w700,
           color: Color(0xFF222222),
         ),
-      ),
-    );
-  }
-
-  Widget _buildFloorStatusCard({
-    required String floorName,
-    required String emptyCount,
-    required String fullCount,
-    required String reservedCount,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            floorName,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF222222),
-            ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: _buildMiniStatusItem(
-                  'Boş',
-                  emptyCount,
-                  const Color(0xFF34A853),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildMiniStatusItem(
-                  'Dolu',
-                  fullCount,
-                  const Color(0xFFEA4335),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildMiniStatusItem(
-                  'Rezerve',
-                  reservedCount,
-                  const Color(0xFFFBBC05),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMiniStatusItem(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 13,
-              color: Color(0xFF666666),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -424,121 +336,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildParkingSpot(String label, Color color) {
-    return Container(
-      height: 58,
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: color.withOpacity(0.35),
-        ),
-      ),
-      child: Center(
-        child: Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-            color: color,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLegendItem(String text, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          text,
-          style: const TextStyle(
-            fontSize: 13,
-            color: Color(0xFF666666),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMiniParkingGrid() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Mini Park Görünümü',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF222222),
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Anlık otopark durumunu hızlıca görüntüleyin.',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF777777),
-            ),
-          ),
-          const SizedBox(height: 18),
-          GridView.count(
-            crossAxisCount: 4,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1.6,
-            children: [
-              _buildParkingSpot('A1', const Color(0xFF34A853)),
-              _buildParkingSpot('A2', const Color(0xFFEA4335)),
-              _buildParkingSpot('A3', const Color(0xFFFBBC05)),
-              _buildParkingSpot('A4', const Color(0xFF34A853)),
-              _buildParkingSpot('B1', const Color(0xFFEA4335)),
-              _buildParkingSpot('B2', const Color(0xFF34A853)),
-              _buildParkingSpot('B3', const Color(0xFFFBBC05)),
-              _buildParkingSpot('B4', const Color(0xFF34A853)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 10,
-            children: [
-              _buildLegendItem('Boş', const Color(0xFF34A853)),
-              _buildLegendItem('Dolu', const Color(0xFFEA4335)),
-              _buildLegendItem('Rezerve', const Color(0xFFFBBC05)),
-            ],
           ),
         ],
       ),
@@ -632,61 +429,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
             const SizedBox(height: 32),
-            _buildSectionTitle('Kat Bazlı Durum'),
-            if (isMobile) ...[
-              _buildFloorStatusCard(
-                floorName: 'P1 Katı',
-                emptyCount: '-',
-                fullCount: '-',
-                reservedCount: '-',
-              ),
-              const SizedBox(height: 16),
-              _buildFloorStatusCard(
-                floorName: 'P2 Katı',
-                emptyCount: '-',
-                fullCount: '-',
-                reservedCount: '-',
-              ),
-              const SizedBox(height: 16),
-              _buildFloorStatusCard(
-                floorName: 'P3 Katı',
-                emptyCount: '-',
-                fullCount: '-',
-                reservedCount: '-',
-              ),
-            ] else ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildFloorStatusCard(
-                      floorName: 'P1 Katı',
-                      emptyCount: '-',
-                      fullCount: '-',
-                      reservedCount: '-',
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildFloorStatusCard(
-                      floorName: 'P2 Katı',
-                      emptyCount: '-',
-                      fullCount: '-',
-                      reservedCount: '-',
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildFloorStatusCard(
-                      floorName: 'P3 Katı',
-                      emptyCount: '-',
-                      fullCount: '-',
-                      reservedCount: '-',
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 32),
             _buildSectionTitle('Sistem Özellikleri'),
             _buildFeatureCard(
               icon: Icons.local_parking_rounded,
@@ -708,8 +450,6 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle:
                   'Kullanıcı giriş sistemiyle rezervasyonlarınızı güvenli biçimde yönetebilirsiniz.',
             ),
-            const SizedBox(height: 32),
-            _buildMiniParkingGrid(),
           ],
         );
       },
@@ -818,68 +558,68 @@ class _HomeScreenState extends State<HomeScreen> {
         );
 
       case 2:
-  return Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(18),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Fiyat Listesi",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          "Park süresine göre ücret bilgilerini aşağıdan inceleyebilirsiniz.",
-          style: TextStyle(
-            fontSize: 14,
-            height: 1.5,
-            color: Colors.grey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Fiyat Listesi",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Park süresine göre ücret bilgilerini aşağıdan inceleyebilirsiniz.",
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.5,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 18),
+              const _PriceCard(
+                title: "Kısa Süreli Kullanım",
+                duration: "0 - 60 Dakika",
+                price: "Ücretsiz",
+                highlighted: true,
+              ),
+              const SizedBox(height: 12),
+              const _PriceCard(
+                title: "Standart Kullanım",
+                duration: "1 - 3 Saat",
+                price: "150₺",
+              ),
+              const SizedBox(height: 12),
+              const _PriceCard(
+                title: "Orta Süreli Kullanım",
+                duration: "3 - 6 Saat",
+                price: "250₺",
+              ),
+              const SizedBox(height: 12),
+              const _PriceCard(
+                title: "Tam Gün Kullanım",
+                duration: "Gün Boyu",
+                price: "300₺",
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 18),
-        const _PriceCard(
-          title: "Kısa Süreli Kullanım",
-          duration: "0 - 60 Dakika",
-          price: "Ücretsiz",
-          highlighted: true,
-        ),
-        const SizedBox(height: 12),
-        const _PriceCard(
-          title: "Standart Kullanım",
-          duration: "1 - 3 Saat",
-          price: "150₺",
-        ),
-        const SizedBox(height: 12),
-        const _PriceCard(
-          title: "Orta Süreli Kullanım",
-          duration: "3 - 6 Saat",
-          price: "250₺",
-        ),
-        const SizedBox(height: 12),
-        const _PriceCard(
-          title: "Tam Gün Kullanım",
-          duration: "Gün Boyu",
-          price: "300₺",
-        ),
-      ],
-    ),
-  );
+        );
 
       case 3:
         return Container(
@@ -928,125 +668,48 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              Container(
+              const SizedBox(height: 24), // Biraz boşluk bırakıp direkt butonu veriyoruz
+              SizedBox(
                 width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF9F6F7),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFF0D9D9)),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.local_parking_rounded,
-                          color: Color(0xFFD32F2F),
-                          size: 22,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          "Rezervasyon Özeti",
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 18),
-                    _ReservationInfoRow(
-                      icon: Icons.layers_outlined,
-                      label: "Kat",
-                      value: "-",
-                    ),
-                    SizedBox(height: 12),
-                    _ReservationInfoRow(
-                      icon: Icons.pin_drop_outlined,
-                      label: "Park Alanı",
-                      value: "-",
-                    ),
-                    SizedBox(height: 12),
-                    _ReservationInfoRow(
-                      icon: Icons.calendar_today_outlined,
-                      label: "Tarih",
-                      value: "-",
-                    ),
-                    SizedBox(height: 12),
-                    _ReservationInfoRow(
-                      icon: Icons.access_time_outlined,
-                      label: "Saat",
-                      value: "-",
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {},
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFD32F2F),
-                        side: const BorderSide(color: Color(0xFFD32F2F)),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Text(
-                        "Temizle",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        if (!AuthService.isLoggedIn) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LoginScreen()),
-                          ).then((value) {
-                            if (value == true) {
-                              setState(() {});
-                            }
-                          });
-                          return;
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    if (!AuthService.isLoggedIn) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      ).then((value) {
+                        if (value == true) {
+                          loadParkings(); // giriş sonrası verileri yenile
+                          setState(() {});
                         }
+                      });
+                      return;
+                    }
 
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const CreateReservationScreen(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD32F2F),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CreateReservationScreen(),
                       ),
-                      icon: const Icon(Icons.add_circle_outline),
-                      label: const Text(
-                        "Rezervasyon Yap",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                        ),
-                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD32F2F),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                ],
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text(
+                    "Rezervasyon Yap",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -1113,7 +776,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                 ).then((value) {
-                  if (value == true) setState(() {});
+                  if (value == true) {
+                    loadParkings(); // giriş sonrası verileri yenile
+                    setState(() {});
+                  }
                 });
               },
               child: const Text(
@@ -1221,44 +887,6 @@ class _PriceRow extends StatelessWidget {
   }
 }
 
-class _ReservationInfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _ReservationInfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: const Color(0xFFD32F2F)),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-        ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: Colors.black87,
-          ),
-        ),
-      ],
-    );
-  }
-}
 class _PriceCard extends StatelessWidget {
   final String title;
   final String duration;

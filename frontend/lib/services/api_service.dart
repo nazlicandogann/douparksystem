@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/backend/parking_api_model.dart';
@@ -89,28 +90,48 @@ class ApiService {
   // ---------------------------
   // PARKING LIST
   // ---------------------------
-  static Future<List<ParkingApiModel>> getAllParkings() async {
+ 
+ // 1. TÜM OTOPARKLARI GETİREN METOD
+ static Future<List<ParkingApiModel>> getAllParkings() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/parking/all'),
+        Uri.parse('http://localhost:8080/api/parking/all'),
         headers: _headers,
       );
 
+      debugPrint('STATUS: ' + response.statusCode.toString());
+      debugPrint('BODY: ' + response.body);
+
       if (response.statusCode == 200) {
-        final List<dynamic> decoded = jsonDecode(response.body);
-
-        return decoded
-            .map((e) => ParkingApiModel.fromJson(e))
-            .toList();
+        final dynamic decoded = jsonDecode(response.body);
+        if (decoded is List) {
+          return decoded.map((e) => ParkingApiModel.fromJson(e as Map<String, dynamic>)).toList();
+        }
+        return [];
       }
+      return [];
+    } catch (e) {
+      debugPrint('HATA: ' + e.toString());
+      return [];
+    }
+  }
 
+  // 2. DOLU YERLERİ GETİREN METOD (Hata veren yer burasıydı, dışarı aldık)
+  static Future<List<int>> getOccupiedSpots(int parkingId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:8080/api/reservations/occupied-spots/$parkingId'),
+        headers: _headers,
+      );
+      if (response.statusCode == 200) {
+        return List<int>.from(jsonDecode(response.body));
+      }
       return [];
     } catch (e) {
       return [];
     }
   }
-
-  // ---------------------------
+ // ---------------------------
   // CREATE RESERVATION
   // ---------------------------
   static Future<Map<String, dynamic>> createReservation({
@@ -118,16 +139,19 @@ class ApiService {
     required String plateNumber,
     required String startTime,
     required String endTime,
+    int? selectedSpotIndex, // Haritadan seçilen park yeri kutucuğu eklendi
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/reservations'), // 🔥 DOĞRU ENDPOINT
+        Uri.parse('$baseUrl/reservations'),
         headers: _headers,
         body: jsonEncode({
           'parkingId': parkingId,
           'plateNumber': plateNumber,
           'startTime': startTime,
           'endTime': endTime,
+          // Eğer haritadan bir kutucuk seçildiyse bunu backend'e gönderiyoruz
+          if (selectedSpotIndex != null) 'selectedSpotIndex': selectedSpotIndex, 
         }),
       );
 
@@ -150,7 +174,7 @@ class ApiService {
   static Future<List<dynamic>> getMyReservations() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/reservations'), // 🔥 DOĞRU
+        Uri.parse('$baseUrl/reservations'),
         headers: _headers,
       );
 
