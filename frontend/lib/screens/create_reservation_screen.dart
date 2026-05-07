@@ -14,19 +14,15 @@ class CreateReservationScreen extends StatefulWidget {
 }
 
 class _CreateReservationScreenState extends State<CreateReservationScreen> {
-  // --- DEĞİŞKEN TANIMLAMALARI ---
-  String selectedFloor = 'A Blok';
   ParkingApiModel? selectedParking;
   final TextEditingController plateController = TextEditingController();
-  
+
   List<ParkingApiModel> parkings = [];
   bool isLoading = true;
-  
-  // Harita için gerekli yeni değişkenler
-  List<int> occupiedSpots = []; // Backend'den gelen dolu spotların listesi
-  int? selectedSpotIndex;       // Kullanıcının seçtiği kutucuk
-  
-  final List<String> floors = ['A Blok', 'B Blok', 'Misafir'];
+
+  // Park haritası için değişkenler
+  List<int> occupiedSpots = [];
+  int? selectedSpotIndex;
 
   @override
   void initState() {
@@ -40,9 +36,9 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
     super.dispose();
   }
 
-  // Backend'den otoparka ait dolu spotları çeker
   Future<void> fetchOccupiedSpots(int parkingId) async {
     final spots = await ApiService.getOccupiedSpots(parkingId);
+    if (!mounted) return;
     setState(() {
       occupiedSpots = spots;
     });
@@ -50,23 +46,27 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
 
   Future<void> loadParkings() async {
     final data = await ApiService.getAllParkings();
+    if (!mounted) return;
+    // Sadece A Blok, B Blok, Misafir goster
+    final allowed = ['A Blok', 'B Blok', 'Misafir'];
+    final filtered = data.where((p) =>
+      allowed.any((a) => p.location.toLowerCase().contains(a.toLowerCase()))
+    ).toList();
+
     setState(() {
-      parkings = data;
+      parkings = filtered.isNotEmpty ? filtered : data;
       isLoading = false;
-      
-      // firstOrNull hatasını engellemek için güvenli liste kontrolü:
-      final matches = data.where((p) => p.location == selectedFloor).toList();
-      selectedParking = matches.isNotEmpty ? matches.first : null;
+      if (parkings.isNotEmpty) {
+        selectedParking = parkings.first;
+      }
     });
 
-    // Sayfa ilk yüklendiğinde varsayılan katın (Örn: A Blok) dolu yerlerini çek
     if (selectedParking != null) {
       await fetchOccupiedSpots(selectedParking!.id);
     }
   }
 
   Future<void> createReservation() async {
-    // Giriş kontrolü - rezervasyon yapmak için giriş gerekli
     if (!AuthService.isLoggedIn) {
       Navigator.push(
         context,
@@ -81,7 +81,7 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
     }
 
     if (selectedSpotIndex == null) {
-      _showSnackBar("Lütfen haritadan bir park yeri (spot) seçin");
+      _showSnackBar("Lütfen haritadan bir park yeri seçin");
       return;
     }
 
@@ -96,7 +96,6 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
     final now = DateTime.now();
     final end = now.add(const Duration(hours: 1));
 
-    // ISO-8601 formatı
     String formatDateTime(DateTime dt) {
       return "${dt.year.toString().padLeft(4,'0')}-"
              "${dt.month.toString().padLeft(2,'0')}-"
@@ -106,7 +105,6 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
              "${dt.second.toString().padLeft(2,'0')}";
     }
 
-    // Backend'e gönderim
     final result = await ApiService.createReservation(
       parkingId: selectedParking!.id,
       plateNumber: plate,
@@ -115,12 +113,14 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
       selectedSpotIndex: selectedSpotIndex,
     );
 
+    if (!mounted) return;
     setState(() { isLoading = false; });
 
-    if (!mounted) return;
-
     if (result['success'] == true) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ReservationsScreen()));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ReservationsScreen()),
+      );
     } else {
       _showSnackBar(result['message'] ?? 'Rezervasyon başarısız', isError: true);
     }
@@ -135,10 +135,9 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
     );
   }
 
-  // Seçili blok için dinamik park haritası
   Widget _buildParkingMap(ParkingApiModel parking) {
-    final int total = 60; // Görseldeki talebe göre 60 spot
-    final int available = 60 - occupiedSpots.length; // Boş yer hesabı düzeltildi
+    final int total = parking.totalSpots > 0 ? parking.totalSpots : 20;
+    final int available = total - occupiedSpots.length;
 
     return Container(
       width: double.infinity,
@@ -162,36 +161,37 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
             children: [
               const Icon(Icons.map_outlined, color: Color(0xFFD32F2F), size: 20),
               const SizedBox(width: 8),
-              Text(
-                "${parking.location} — Park Haritası",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF222222),
+              Expanded(
+                child: Text(
+                  "${parking.location} — Park Haritası",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF222222),
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
-            "Boş Spotu Seçin: $available / $total",
+            "Boş Spot Seçin: $available / $total",
             style: const TextStyle(fontSize: 13, color: Colors.grey),
           ),
           const SizedBox(height: 14),
 
-          // --- GRID HARITA ---
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 5,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 0.7,
+              crossAxisCount: 8,
+              crossAxisSpacing: 5,
+              mainAxisSpacing: 5,
+              childAspectRatio: 1.1,
             ),
             itemCount: total,
             itemBuilder: (context, index) {
-              final bool isOccupied = occupiedSpots.contains(index); 
+              final bool isOccupied = occupiedSpots.contains(index);
               final bool isSelected = selectedSpotIndex == index;
 
               return GestureDetector(
@@ -200,42 +200,41 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
                     selectedSpotIndex = index;
                   });
                 },
-                child: Transform.rotate(
-                  angle: index % 2 == 0 ? 0.05 : -0.05, // Hafif eğim
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isOccupied 
-                          ? Colors.red.withOpacity(0.3) 
-                          : (isSelected ? Colors.blue : Colors.green.withOpacity(0.15)),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: isSelected ? Colors.blue.shade900 : (isOccupied ? Colors.red : Colors.green.withOpacity(0.4)),
-                        width: isSelected ? 2 : 1,
-                      ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isOccupied
+                        ? Colors.red.withOpacity(0.2)
+                        : (isSelected ? const Color(0xFFD32F2F) : Colors.green.withOpacity(0.12)),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFFD32F2F)
+                          : (isOccupied ? Colors.red.shade300 : Colors.green.withOpacity(0.4)),
+                      width: isSelected ? 2 : 1,
                     ),
-                    child: Center(
-                      child: Icon(
-                        Icons.directions_car,
-                        size: 20, 
-                        color: isOccupied ? Colors.red : (isSelected ? Colors.white : Colors.green),
-                      ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.directions_car,
+                      size: 11,
+                      color: isOccupied
+                          ? Colors.red
+                          : (isSelected ? Colors.white : Colors.green),
                     ),
                   ),
                 ),
               );
             },
           ),
-          
-          const SizedBox(height: 14),
 
-          // Lejant
+          const SizedBox(height: 14),
           Row(
             children: [
               _legendItem(Colors.green, "Boş"),
               const SizedBox(width: 12),
               _legendItem(Colors.red, "Dolu"),
               const SizedBox(width: 12),
-              _legendItem(Colors.blue, "Seçili"),
+              _legendItem(const Color(0xFFD32F2F), "Seçili"),
             ],
           ),
         ],
@@ -261,10 +260,6 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // firstOrNull kaldırıldı, güvenli filtreleme getirildi
-    final currentMatches = parkings.where((p) => p.location == selectedFloor).toList();
-    final currentParking = currentMatches.isNotEmpty ? currentMatches.first : null;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -276,116 +271,167 @@ class _CreateReservationScreenState extends State<CreateReservationScreen> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Park Bölgesi Seç",
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF222222)),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: floors.map((floor) {
-                      // firstOrNull kaldırıldı, güvenli filtreleme getirildi
-                      final floorMatches = parkings.where((x) => x.location == floor).toList();
-                      final p = floorMatches.isNotEmpty ? floorMatches.first : null;
-                      final bool isSelected = selectedFloor == floor;
-
-                      return GestureDetector(
-                        onTap: () async {
-                          setState(() {
-                            selectedFloor = floor;
-                            selectedParking = p;
-                            selectedSpotIndex = null; // Kat değişince seçimi sıfırla
-                            occupiedSpots = []; // Yeni kat yüklenene kadar dolu yerleri temizle
-                          });
-                          
-                          if (p != null) {
-                            await fetchOccupiedSpots(p.id); // Yeni katın dolu spotlarını çek
-                          }
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFFD32F2F) : Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: isSelected ? const Color(0xFFD32F2F) : const Color(0xFFE0E0E0)),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                floor,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  color: isSelected ? Colors.white : Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                p != null ? "${p.availableSpots} boş" : "-",
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: isSelected ? Colors.white70 : Colors.green,
-                                ),
-                              ),
-                            ],
+          : parkings.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.local_parking_outlined, size: 64, color: Colors.grey.shade400),
+                        const SizedBox(height: 16),
+                        const Text(
+                          "Park alanı bulunamadı",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Backend bağlantısını kontrol edin",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() => isLoading = true);
+                            loadParkings();
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text("Yenile"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD32F2F),
+                            foregroundColor: Colors.white,
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  if (currentParking != null)
-                    _buildParkingMap(currentParking),
-
-                  const SizedBox(height: 20),
-
-                  const Text(
-                    "Araç Plakası",
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF222222)),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: plateController,
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: InputDecoration(
-                      hintText: "Örn: 34ABC123",
-                      prefixIcon: const Icon(Icons.directions_car, color: Color(0xFFD32F2F)),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                      ],
                     ),
                   ),
-
-                  const SizedBox(height: 24),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: createReservation,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD32F2F),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Park Bölgesi Seç",
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF222222),
+                        ),
                       ),
-                      child: Text(
-                        "Rezervasyon Yap — $selectedFloor",
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                      const SizedBox(height: 10),
+
+                      // Backend'den gelen gerçek park alanlarını listele
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: parkings.map((p) {
+                          final bool isSelected = selectedParking?.id == p.id;
+                          return GestureDetector(
+                            onTap: () async {
+                              setState(() {
+                                selectedParking = p;
+                                selectedSpotIndex = null;
+                                occupiedSpots = [];
+                              });
+                              await fetchOccupiedSpots(p.id);
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: isSelected ? const Color(0xFFD32F2F) : Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? const Color(0xFFD32F2F)
+                                      : const Color(0xFFE0E0E0),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    p.location,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: isSelected ? Colors.white : Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "${p.availableSpots} boş",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: isSelected ? Colors.white70 : Colors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
-                    ),
+
+                      const SizedBox(height: 20),
+
+                      if (selectedParking != null)
+                        _buildParkingMap(selectedParking!),
+
+                      const SizedBox(height: 20),
+
+                      const Text(
+                        "Araç Plakası",
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF222222),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: plateController,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: InputDecoration(
+                          hintText: "Örn: 34ABC123",
+                          prefixIcon: const Icon(Icons.directions_car, color: Color(0xFFD32F2F)),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: createReservation,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD32F2F),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            selectedParking != null
+                                ? "Rezervasyon Yap — ${selectedParking!.location}"
+                                : "Rezervasyon Yap",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                    ],
                   ),
-                  const SizedBox(height: 30),
-                ],
-              ),
-            ),
+                ),
     );
   }
 }

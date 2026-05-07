@@ -31,7 +31,7 @@ public class ParkingController {
     @PostMapping("/add")
     public String addParking(@RequestBody Parking parking,
                              @RequestHeader("Authorization") String token) {
-        String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+        String email = jwtUtil.extractUsername(token.replace("Bearer ", ""));
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         if (!user.getRole().equals("ADMIN")) {

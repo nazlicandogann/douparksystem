@@ -69,9 +69,11 @@ public class AuthService {
 
         // 🔥 TOKEN OLUŞTUR
         String token = jwtUtil.generateToken(user.getEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
 
         return new LoginResponseDTO(
                 token,
+                refreshToken,
                 user.getEmail(),
                 user.getName()
         );

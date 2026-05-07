@@ -46,4 +46,26 @@ public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         return ResponseEntity.status(401).body(e.getMessage());
     }
 }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody Map<String, String> body) {
+        String refreshToken = body.get("refreshToken");
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return ResponseEntity.status(400).body("refreshToken gerekli");
+        }
+        try {
+            String email = jwtUtil.extractUsername(refreshToken);
+            if (email == null || jwtUtil.isTokenExpired(refreshToken)) {
+                return ResponseEntity.status(401).body("Refresh token geçersiz veya süresi dolmuş");
+            }
+            String newAccessToken = jwtUtil.generateToken(email);
+            String newRefreshToken = jwtUtil.generateRefreshToken(email);
+            return ResponseEntity.ok(Map.of(
+                    "token", newAccessToken,
+                    "refreshToken", newRefreshToken
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Refresh token hatalı: " + e.getMessage());
+        }
+    }
 }

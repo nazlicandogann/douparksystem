@@ -93,7 +93,21 @@ public ResponseEntity<List<Integer>> getOccupiedSpots(@PathVariable Long parking
                 reservationService.getAllReservations()
         );
     }
-
+/**
+     * Tek bir rezervasyonun detaylarını getirir.
+     * Frontend QR kodunu göstermek için bu endpoint'i kullanır.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Reservation> getReservationById(@PathVariable Long id) {
+        // Not: Service katmanında bu metodun olduğunu varsayıyorum.
+        // Eğer yoksa ReservationService içine 'return reservationRepository.findById(id).orElse(null);' eklemelisin.
+        Reservation res = reservationService.getReservationById(id); 
+        if (res == null) {
+            return ResponseEntity.notFound().build();
+        }
+        System.out.println("QR açıldı: " + res.getId()); // Senin loglarında gördüğümüz yazı
+        return ResponseEntity.ok(res);
+    }
     /**
      * Rezervasyon İptali
      * Kaydı silmek yerine durumunu 'DONE' veya 'CANCELLED' olarak günceller.

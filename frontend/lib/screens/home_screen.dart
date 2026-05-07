@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 import 'create_reservation_screen.dart';
@@ -480,8 +481,15 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
+        // Sadece A Blok, B Blok, Misafir goster
+        final allowed = ['A Blok', 'B Blok', 'Misafir'];
+        final filteredParkings = parkings.where((p) =>
+          allowed.any((a) => p.location.toLowerCase().contains(a.toLowerCase()))
+        ).toList();
+        final displayParkings = filteredParkings.isNotEmpty ? filteredParkings : parkings;
+
         return Column(
-          children: parkings.map((p) {
+          children: displayParkings.map((p) {
             final int total = p.totalSpots > 0 ? p.totalSpots : 1;
             final int empty = p.availableSpots.clamp(0, total);
             final double percent = empty / total;
@@ -741,7 +749,70 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.qr_code_2_outlined, color: Color(0xFFD32F2F)),
             onPressed: () {
-              debugPrint("QR açıldı");
+              if (!AuthService.isLoggedIn) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('QR kodu görmek için giriş yapmalısınız.')),
+                );
+                return;
+              }
+              final qrData = 'doupark://user/${UserStore.fullName.isNotEmpty ? UserStore.fullName : "kullanici"}';
+              showDialog(
+                context: context,
+                builder: (ctx) => Dialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(28),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'QR Kodunuz',
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          UserStore.fullName.isNotEmpty ? UserStore.fullName : 'Kullanıcı',
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                        const SizedBox(height: 20),
+                        QrImageView(
+                          data: qrData,
+                          version: QrVersions.auto,
+                          size: 220,
+                          eyeStyle: const QrEyeStyle(
+                            eyeShape: QrEyeShape.square,
+                            color: Color(0xFFD32F2F),
+                          ),
+                          dataModuleStyle: const QrDataModuleStyle(
+                            dataModuleShape: QrDataModuleShape.square,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Park girişi/çıkışında okutunuz',
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFD32F2F),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('Kapat'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
             },
           ),
           if (loggedIn) ...[
