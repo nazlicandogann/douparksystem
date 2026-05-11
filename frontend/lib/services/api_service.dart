@@ -260,4 +260,79 @@ class ApiService {
       return [];
     }
   }
+
+  // ─── ADMIN ───────────────────────────────────────────────────────────────
+
+  static Future<Map<String, dynamic>?> getAdminStats() async {
+    try {
+      final resp = await _get(Uri.parse('$baseUrl/admin/stats'));
+      if (resp.statusCode == 200) return jsonDecode(resp.body);
+      return null;
+    } catch (e) { return null; }
+  }
+
+  static Future<List<dynamic>> getAdminUsers() async {
+    try {
+      final resp = await _get(Uri.parse('$baseUrl/admin/users'));
+      if (resp.statusCode == 200) return jsonDecode(resp.body);
+      return [];
+    } catch (e) { return []; }
+  }
+
+  static Future<bool> updateUserRole(int userId, String role) async {
+    try {
+      final resp = await _post(
+        Uri.parse('$baseUrl/admin/users/$userId/role'),
+        jsonEncode({'role': role}),
+      );
+      return resp.statusCode == 200;
+    } catch (e) { return false; }
+  }
+
+  static Future<bool> deleteUser(int userId) async {
+    try {
+      final resp = await http.delete(Uri.parse('$baseUrl/admin/users/$userId'), headers: _headers);
+      return resp.statusCode == 200;
+    } catch (e) { return false; }
+  }
+
+  static Future<List<dynamic>> getAdminReservations() async {
+    try {
+      final resp = await _get(Uri.parse('$baseUrl/admin/reservations'));
+      if (resp.statusCode == 200) return jsonDecode(resp.body);
+      return [];
+    } catch (e) { return []; }
+  }
+
+  static Future<bool> deleteReservation(int id) async {
+    try {
+      final resp = await http.delete(Uri.parse('$baseUrl/admin/reservations/$id'), headers: _headers);
+      return resp.statusCode == 200;
+    } catch (e) { return false; }
+  }
+
+  static Future<bool> addParking(Map<String, dynamic> data) async {
+    try {
+      final resp = await _post(Uri.parse('$baseUrl/admin/parkings'), jsonEncode(data));
+      return resp.statusCode == 200;
+    } catch (e) { return false; }
+  }
+
+  static Future<bool> updateParking(int id, Map<String, dynamic> data) async {
+    try {
+      final resp = await http.put(
+        Uri.parse('$baseUrl/admin/parkings/$id'),
+        headers: _headers,
+        body: jsonEncode(data),
+      );
+      return resp.statusCode == 200;
+    } catch (e) { return false; }
+  }
+
+  static Future<bool> deleteParking(int id) async {
+    try {
+      final resp = await http.delete(Uri.parse('$baseUrl/admin/parkings/$id'), headers: _headers);
+      return resp.statusCode == 200;
+    } catch (e) { return false; }
+  }
 }

@@ -38,7 +38,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: const Color(0xFF111111),
       appBar: AppBar(
         title: const Text('Rezervasyonlarım'),
         centerTitle: true,
@@ -48,19 +48,20 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Geri',
           onPressed: () {
-            // Tab içindeysek MainNavigation üst sekmeye geçirir;
-            // değilsek standart pop yapar.
             if (widget.onBack != null) {
               widget.onBack!();
-            } else if (Navigator.canPop(context)) {
-              Navigator.pop(context);
+            } else {
+              Navigator.of(context).pop();
             }
           },
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: loadReservations,
+            onPressed: () {
+              setState(() => isLoading = true);
+              loadReservations();
+            },
           ),
         ],
       ),
@@ -83,9 +84,9 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF222222),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: const Color(0xFF2A2A2A)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -99,7 +100,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.local_parking, color: Color(0xFFD32F2F), size: 20),
+              const Icon(Icons.local_parking, color: Color(0xFFE53935), size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -136,7 +137,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                 icon: const Icon(Icons.qr_code_2_rounded),
                 label: const Text('QR Kodu Göster'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD32F2F),
+                  backgroundColor: const Color(0xFFE53935),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -285,7 +286,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.qr_code_2_rounded, color: Color(0xFFD32F2F)),
+                  const Icon(Icons.qr_code_2_rounded, color: Color(0xFFE53935)),
                   const SizedBox(width: 8),
                   Text(
                     qrUsed ? 'QR Kullanıldı' : 'Giriş QR Kodu',
@@ -303,7 +304,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
               if (qrUsed)
                 Container(
                   padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(16)),
+                  decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(16)),
                   child: const Icon(Icons.check_circle, color: Colors.green, size: 64),
                 )
               else if (qrToken.isNotEmpty)
@@ -311,8 +312,8 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                   data: qrToken,
                   version: QrVersions.auto,
                   size: 220,
-                  eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFFD32F2F)),
-                  dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: Colors.black87),
+                  eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFFE53935)),
+                  dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: const Color(0xFFF5F5F5)),
                 )
               else
                 const Text('QR token boş', style: TextStyle(color: Colors.red)),
@@ -322,7 +323,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(ctx),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD32F2F),
+                    backgroundColor: const Color(0xFFE53935),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -343,7 +344,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+          decoration: BoxDecoration(color: const Color(0xFF222222), borderRadius: BorderRadius.circular(22)),
           child: const Column(
             mainAxisSize: MainAxisSize.min,
             children: [

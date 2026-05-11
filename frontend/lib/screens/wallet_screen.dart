@@ -54,7 +54,7 @@ class _WalletScreenState extends State<WalletScreen> {
 
     if (result['success'] == true) {
       _amountController.clear();
-      _snack('\${amount.toStringAsFixed(0)} TL basariyla yuklendi');
+      _snack('Yükleme işlemi tamamlandı');
       _load();
     } else {
       _snack(result['message'] ?? 'Yukleme basarisiz', error: true);
@@ -87,7 +87,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 hintText: 'Ornek: 50',
                 prefixText: 'TL ',
                 filled: true,
-                fillColor: Colors.grey.shade100,
+                fillColor: const Color(0xFF1E1E1E),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none),
@@ -103,7 +103,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     _amountController.text = v.toInt().toString();
                   },
                   backgroundColor: const Color(0xFFFDECEC),
-                  labelStyle: const TextStyle(color: Color(0xFFD32F2F)),
+                  labelStyle: const TextStyle(color: Color(0xFFE53935)),
                 );
               }).toList(),
             ),
@@ -120,7 +120,7 @@ class _WalletScreenState extends State<WalletScreen> {
               _deposit();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD32F2F),
+              backgroundColor: const Color(0xFFE53935),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
@@ -134,7 +134,7 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: const Color(0xFF111111),
       appBar: AppBar(
         title: const Text('Cuzdan'),
         centerTitle: true,
@@ -154,14 +154,14 @@ class _WalletScreenState extends State<WalletScreen> {
                     padding: const EdgeInsets.all(28),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFFD32F2F), Color(0xFFB71C1C)],
+                        colors: [Color(0xFFE53935), Color(0xFFE53935)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFD32F2F).withOpacity(0.3),
+                          color: const Color(0xFFE53935).withOpacity(0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -185,7 +185,7 @@ class _WalletScreenState extends State<WalletScreen> {
                               ? '${balance!.toStringAsFixed(2)} TL'
                               : '-- TL',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: const Color(0xFF222222),
                             fontSize: 36,
                             fontWeight: FontWeight.bold,
                           ),
@@ -198,8 +198,8 @@ class _WalletScreenState extends State<WalletScreen> {
                             icon: const Icon(Icons.add),
                             label: const Text('Para Yukle'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFFD32F2F),
+                              backgroundColor: const Color(0xFF0F0F0F),
+                              foregroundColor: const Color(0xFFE53935),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -221,7 +221,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     Container(
                       padding: const EdgeInsets.all(32),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: const Color(0xFF222222),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Column(
@@ -262,9 +262,9 @@ class _WalletScreenState extends State<WalletScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF222222),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: const Color(0xFF1E1E1E)),
       ),
       child: Row(
         children: [

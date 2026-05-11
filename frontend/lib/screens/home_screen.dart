@@ -100,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 3,
               width: 40,
               decoration: BoxDecoration(
-                color: isActive ? const Color(0xFFD32F2F) : Colors.transparent,
+                color: isActive ? const Color(0xFFE53935) : Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
@@ -120,15 +120,9 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF1E1E1E),
           borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          border: Border.all(color: const Color(0xFF2E2E2E)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
       child: Column(
         children: [
-          Icon(icon, size: 54, color: Colors.grey.shade400),
+          Icon(icon, size: 54, color: const Color(0xFF555555)),
           const SizedBox(height: 14),
           Text(
             title,
@@ -176,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: const Color(0xFFF5F5F5),
             ),
           ),
           const SizedBox(height: 8),
@@ -194,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ElevatedButton(
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD32F2F),
+                backgroundColor: const Color(0xFFE53935),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
                 shape: RoundedRectangleBorder(
@@ -241,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     "DouPark",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: const Color(0xFFF5F5F5),
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
                     ),
@@ -250,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     "Akıllı Otopark Sistemi",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: const Color(0xFFF5F5F5),
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
@@ -272,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
         style: const TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF222222),
+          color: const Color(0xFFF5F5F5),
         ),
       ),
     );
@@ -287,15 +281,9 @@ class _HomeScreenState extends State<HomeScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFF2E2E2E)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFFFDECEC),
+              color: const Color(0xFF2A1515),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
@@ -323,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF222222),
+                    color: const Color(0xFFF5F5F5),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -356,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: 15,
                 height: 1.6,
-                color: Colors.black87,
+                color: const Color(0xFFF5F5F5),
               ),
             ),
             const SizedBox(height: 20),
@@ -367,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Toplam Alan",
                     value: totalAreas.toString(),
                     icon: Icons.local_parking_outlined,
-                    color: const Color(0xFFD32F2F),
+                    color: const Color(0xFFE53935),
                   ),
                   const SizedBox(width: 12),
                   _buildSummaryCard(
@@ -403,7 +391,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Toplam Alan",
                     value: totalAreas.toString(),
                     icon: Icons.local_parking_outlined,
-                    color: const Color(0xFFD32F2F),
+                    color: const Color(0xFFE53935),
                   ),
                   const SizedBox(width: 12),
                   _buildSummaryCard(
@@ -493,74 +481,12 @@ class _HomeScreenState extends State<HomeScreen> {
             final int total = p.totalSpots > 0 ? p.totalSpots : 1;
             final int empty = p.availableSpots.clamp(0, total);
             final double percent = empty / total;
-            final int percentText = (percent * 100).toInt();
-
-            return Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 14),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          p.location,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: _getColor(percent).withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          "%$percentText boş",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: _getColor(percent),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: LinearProgressIndicator(
-                      value: percent.clamp(0.0, 1.0),
-                      minHeight: 12,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor: AlwaysStoppedAnimation<Color>(_getColor(percent)),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    "$empty / $total boş park yeri",
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
+            return _FlameBar(
+              key: ValueKey(p.id),
+              name: p.location,
+              empty: empty,
+              total: total,
+              percent: percent,
             );
           }).toList(),
         );
@@ -570,15 +496,9 @@ class _HomeScreenState extends State<HomeScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1A1A1A),
             borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: const Color(0xFF2E2E2E)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -588,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: const Color(0xFFF5F5F5),
                 ),
               ),
               const SizedBox(height: 8),
@@ -634,15 +554,9 @@ class _HomeScreenState extends State<HomeScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1A1A1A),
             borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: const Color(0xFF2E2E2E)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -651,7 +565,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Icon(
                   Icons.calendar_month_rounded,
                   size: 46,
-                  color: Color(0xFFD32F2F),
+                  color: Color(0xFFE53935),
                 ),
               ),
               const SizedBox(height: 12),
@@ -702,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD32F2F),
+                    backgroundColor: const Color(0xFFE53935),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
@@ -733,21 +647,21 @@ class _HomeScreenState extends State<HomeScreen> {
     final bool loggedIn = AuthService.isLoggedIn;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F3F6),
+      backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF1A1A1A),
         elevation: 0,
         title: const Text(
           "DouPark",
           style: TextStyle(
-            color: Color(0xFFD32F2F),
+            color: Color(0xFFE53935),
             fontWeight: FontWeight.bold,
             fontSize: 26,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.qr_code_2_outlined, color: Color(0xFFD32F2F)),
+            icon: const Icon(Icons.qr_code_2_outlined, color: Color(0xFFE53935)),
             onPressed: () {
               if (!AuthService.isLoggedIn) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -781,11 +695,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           size: 220,
                           eyeStyle: const QrEyeStyle(
                             eyeShape: QrEyeShape.square,
-                            color: Color(0xFFD32F2F),
+                            color: Color(0xFFE53935),
                           ),
                           dataModuleStyle: const QrDataModuleStyle(
                             dataModuleShape: QrDataModuleShape.square,
-                            color: Colors.black87,
+                            color: const Color(0xFFF5F5F5),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -799,7 +713,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: ElevatedButton(
                             onPressed: () => Navigator.pop(ctx),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFD32F2F),
+                              backgroundColor: const Color(0xFFE53935),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -822,7 +736,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Text(
                   UserStore.fullName.isNotEmpty ? UserStore.fullName : "Kullanıcı",
                   style: const TextStyle(
-                    color: Colors.black87,
+                    color: const Color(0xFFF5F5F5),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -837,7 +751,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               child: const Text(
                 "Çıkış",
-                style: TextStyle(color: Color(0xFFD32F2F)),
+                style: TextStyle(color: Color(0xFFE53935)),
               ),
             ),
           ] else ...[
@@ -867,7 +781,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               child: const Text(
                 "Kayıt Ol",
-                style: TextStyle(color: Color(0xFFD32F2F)),
+                style: TextStyle(color: Color(0xFFE53935)),
               ),
             ),
           ],
@@ -883,7 +797,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Container(
               width: double.infinity,
-              color: const Color(0xFFF7F3F6),
+              color: const Color(0xFF0F0F0F),
               child: Column(
                 children: [
                   const SizedBox(height: 18),
@@ -907,7 +821,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF7F3F6),
+                      color: const Color(0xFF0F0F0F),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: buildContent(),
@@ -919,6 +833,171 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── ALEV ANIMASYONLU BAR ─────────────────────────────────────────────────────
+
+class _FlameBar extends StatefulWidget {
+  final String name;
+  final int empty;
+  final int total;
+  final double percent;
+
+  const _FlameBar({
+    super.key,
+    required this.name,
+    required this.empty,
+    required this.total,
+    required this.percent,
+  });
+
+  @override
+  State<_FlameBar> createState() => _FlameBarState();
+}
+
+class _FlameBarState extends State<_FlameBar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _fillAnim;
+  late Animation<double> _glowAnim;
+
+  // Doluluk oranına göre renk geçişi: yeşil→turuncu→kırmızı-alev
+  List<Color> get _flameColors {
+    final p = widget.percent;
+    if (p > 0.6) {
+      // Çoğunluk boş → soğuk yeşil-camgöbeği
+      return [const Color(0xFF00C853), const Color(0xFF69F0AE)];
+    } else if (p > 0.3) {
+      // Orta → turuncu alev
+      return [const Color(0xFFFF6D00), const Color(0xFFFFD600)];
+    } else {
+      // Dolu → kırmızı-alev
+      return [const Color(0xFFE53935), const Color(0xFFFF6D00)];
+    }
+  }
+
+  Color get _glowColor => _flameColors.first.withOpacity(0.5);
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _fillAnim = Tween<double>(begin: 0, end: widget.percent.clamp(0.0, 1.0))
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+    _glowAnim = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+    // 2 saniye dolum animasyonu, sonra dur
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = (widget.percent * 100).toInt();
+    final colors = _flameColors;
+
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, __) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 14),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A1A),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.white10),
+            boxShadow: [
+              BoxShadow(
+                color: _glowColor.withOpacity(0.15 * _glowAnim.value),
+                blurRadius: 18,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    widget.name,
+                    style: const TextStyle(
+                      color: const Color(0xFFF5F5F5),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: colors.first.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: colors.first.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      '%$pct boş',
+                      style: TextStyle(
+                        color: colors.first,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              // Bar
+              Stack(
+                children: [
+                  // Arka plan
+                  Container(
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  // Dolu kısım — alev gradyan
+                  FractionallySizedBox(
+                    widthFactor: _fillAnim.value,
+                    child: Container(
+                      height: 14,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        gradient: LinearGradient(colors: colors),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.first.withOpacity(0.6 * _glowAnim.value),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                '${widget.empty} / ${widget.total} boş park yeri',
+                style: const TextStyle(color: Colors.white38, fontSize: 13),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -941,7 +1020,7 @@ class _PriceRow extends StatelessWidget {
             title,
             style: const TextStyle(
               fontSize: 14,
-              color: Colors.black87,
+              color: const Color(0xFFF5F5F5),
             ),
           ),
         ),
@@ -950,7 +1029,7 @@ class _PriceRow extends StatelessWidget {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: Color(0xFFD32F2F),
+            color: Color(0xFFE53935),
           ),
         ),
       ],
@@ -977,19 +1056,12 @@ class _PriceCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: highlighted ? const Color(0xFFFDECEC) : Colors.white,
+        color: highlighted ? const Color(0xFF2A1515) : const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: highlighted ? const Color(0xFFD32F2F) : const Color(0xFFE9E3E6),
+          color: highlighted ? const Color(0xFFE53935) : const Color(0xFF2E2E2E),
           width: highlighted ? 1.4 : 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Row(
         children: [
@@ -998,13 +1070,13 @@ class _PriceCard extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               color: highlighted
-                  ? const Color(0xFFD32F2F).withOpacity(0.10)
-                  : const Color(0xFFF7F3F6),
+                  ? const Color(0xFFE53935).withOpacity(0.10)
+                  : const Color(0xFF2A2A2A),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
               Icons.access_time_rounded,
-              color: highlighted ? const Color(0xFFD32F2F) : Colors.grey,
+              color: highlighted ? const Color(0xFFE53935) : Colors.grey,
             ),
           ),
           const SizedBox(width: 14),
@@ -1017,7 +1089,7 @@ class _PriceCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                    color: const Color(0xFFF5F5F5),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1035,8 +1107,8 @@ class _PriceCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: highlighted
-                  ? const Color(0xFFD32F2F)
-                  : const Color(0xFFF7F3F6),
+                  ? const Color(0xFFE53935)
+                  : const Color(0xFF2A2A2A),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -1044,7 +1116,7 @@ class _PriceCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: highlighted ? Colors.white : const Color(0xFFD32F2F),
+                color: highlighted ? Colors.white : const Color(0xFFE53935),
               ),
             ),
           ),

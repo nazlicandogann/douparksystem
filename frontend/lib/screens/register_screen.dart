@@ -272,7 +272,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           child: isLoading
                               ? const CircularProgressIndicator(
-                                  color: Colors.white,
+                                  color: const Color(0xFF222222),
                                 )
                               : const Text("Kayıt Ol"),
                         ),

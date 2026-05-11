@@ -2,21 +2,25 @@ class UserStore {
   static String fullName = '';
   static String email = '';
   static String phone = '';
+  static String role = 'USER';
   static String userType = 'Standart Kullanıcı';
   static String savedCard = 'Henüz eklenmedi';
 
   static List<String> vehicles = [];
 
-  // Login sonrası backend'den gelen bilgilerle doldur
-  static void setFromLogin({required String name, required String userEmail}) {
+  static bool get isAdmin => role == 'ADMIN';
+
+  static void setFromLogin({required String name, required String userEmail, String userRole = 'USER'}) {
     fullName = name;
     email = userEmail;
+    role = userRole;
   }
 
   static void clear() {
     fullName = '';
     email = '';
     phone = '';
+    role = 'USER';
     vehicles = [];
   }
 

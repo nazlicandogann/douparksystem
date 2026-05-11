@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'register_screen.dart';
 import 'main_navigation.dart';
+import 'admin_panel_screen.dart';
 import '../theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
@@ -73,10 +74,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result['success'] == true) {
         final data = result['data'] ?? {};
+        final userRole = data['role'] ?? 'USER';
 
         UserStore.setFromLogin(
           name: data['name'] ?? '',
           userEmail: data['email'] ?? email,
+          userRole: userRole,
         );
 
         AuthService.login();
@@ -85,8 +88,16 @@ class _LoginScreenState extends State<LoginScreen> {
           const SnackBar(content: Text("Giriş başarılı")),
         );
 
-        // MainNavigation zaten root'ta, sadece geri dön ve yenile
-        Navigator.pop(context, true);
+        if (userRole == 'ADMIN') {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminPanelScreen()),
+            (route) => false,
+          );
+        } else {
+          // MainNavigation zaten root'ta, sadece geri dön ve yenile
+          Navigator.pop(context, true);
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -213,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(
-                                    color: Colors.white,
+                                    color: const Color(0xFF222222),
                                     strokeWidth: 2.5,
                                   ),
                                 )

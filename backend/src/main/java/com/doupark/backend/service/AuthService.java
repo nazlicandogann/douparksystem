@@ -37,10 +37,10 @@ public class AuthService {
             );
         }
 
-        // 🔐 Şifreyi hashle
+        //  Şifreyi hashle
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        // 👑 Default role
+        //  Default role
         user.setRole("USER");
 
         userRepository.save(user);
@@ -59,7 +59,7 @@ public class AuthService {
                         "User not found"
                 ));
 
-        // 🔐 HASH KONTROL
+        //  HASH KONTROL
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
@@ -67,7 +67,6 @@ public class AuthService {
             );
         }
 
-        // 🔥 TOKEN OLUŞTUR
         String token = jwtUtil.generateToken(user.getEmail());
         String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
 
@@ -75,7 +74,8 @@ public class AuthService {
                 token,
                 refreshToken,
                 user.getEmail(),
-                user.getName()
+                user.getName(),
+                user.getRole()
         );
     }
 }

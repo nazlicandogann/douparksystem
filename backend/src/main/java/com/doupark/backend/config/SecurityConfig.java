@@ -43,6 +43,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/exit/plate").permitAll()
 
                 // ── JWT GEREKEN endpoint'ler ─────────────────────────────────────
+                // Admin paneli
+                .requestMatchers("/api/admin/**").authenticated()
                 // Cüzdan: bakiye / yükleme / geçmiş — kullanıcıya özel
                 .requestMatchers("/api/wallet/**").authenticated()
                 // QR token görüntüleme & PNG üretimi — kullanıcıya özel
