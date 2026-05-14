@@ -136,9 +136,13 @@ class ApiService {
     }
   }
 
-  static Future<List<int>> getOccupiedSpots(int parkingId) async {
+  static Future<List<int>> getOccupiedSpots(int parkingId, {String? startTime, String? endTime}) async {
     try {
-      final resp = await _get(Uri.parse('$baseUrl/reservations/occupied-spots/$parkingId'));
+      var url = '$baseUrl/reservations/occupied-spots/$parkingId';
+      if (startTime != null && endTime != null) {
+        url += '?startTime=${Uri.encodeComponent(startTime)}&endTime=${Uri.encodeComponent(endTime)}';
+      }
+      final resp = await _get(Uri.parse(url));
       if (resp.statusCode == 200) return List<int>.from(jsonDecode(resp.body));
       return [];
     } catch (e) {
@@ -309,6 +313,28 @@ class ApiService {
       final resp = await http.delete(Uri.parse('$baseUrl/admin/reservations/$id'), headers: _headers);
       return resp.statusCode == 200;
     } catch (e) { return false; }
+  }
+
+  static Future<bool> unbanUser(int id) async {
+    try {
+      final resp = await http.put(Uri.parse('$baseUrl/admin/users/$id/unban'), headers: _headers, body: '{}');
+      return resp.statusCode == 200;
+    } catch (e) { return false; }
+  }
+
+  static Future<bool> banUser(int id) async {
+    try {
+      final resp = await http.put(Uri.parse('$baseUrl/admin/users/$id/ban'), headers: _headers, body: '{}');
+      return resp.statusCode == 200;
+    } catch (e) { return false; }
+  }
+
+  static Future<List<dynamic>> getBannedUsers() async {
+    try {
+      final resp = await _get(Uri.parse('$baseUrl/admin/users/banned'));
+      if (resp.statusCode == 200) return jsonDecode(resp.body);
+      return [];
+    } catch (e) { return []; }
   }
 
   static Future<bool> addParking(Map<String, dynamic> data) async {

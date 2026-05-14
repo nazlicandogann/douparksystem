@@ -89,14 +89,21 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (userRole == 'ADMIN') {
+          // Admin paneline yönlendir
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const AdminPanelScreen()),
             (route) => false,
           );
         } else {
-          // MainNavigation zaten root'ta, sadece geri dön ve yenile
-          Navigator.pop(context, true);
+          // Bug #7 Düzeltme: pushAndRemoveUntil ile MainNavigation'a yönlendir
+          // Navigator.pop yerine pushAndRemoveUntil kullanıyoruz
+          // Bu sayede yeni kayıt olan kullanıcılar da ana sayfaya gider
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const MainNavigation()),
+            (route) => false,
+          );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -224,7 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(
-                                    color: const Color(0xFF222222),
+                                    color: Color(0xFF222222),
                                     strokeWidth: 2.5,
                                   ),
                                 )

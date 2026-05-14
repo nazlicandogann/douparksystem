@@ -1,6 +1,7 @@
 package com.doupark.backend.entity;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -47,6 +48,15 @@ public class Reservation {
     @Column(precision = 10, scale = 2)
     private BigDecimal chargedAmount;
 
+    // Rezervasyon oluşturulma zamanı (15dk expire için)
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
     public Reservation() {}
 
     // GETTERS
@@ -63,6 +73,7 @@ public class Reservation {
     public LocalDateTime getActualEntryTime() { return actualEntryTime; }
     public LocalDateTime getActualExitTime()  { return actualExitTime; }
     public BigDecimal getChargedAmount()    { return chargedAmount; }
+    public LocalDateTime getCreatedAt()       { return createdAt; }
 
     // SETTERS
     public void setParking(Parking parking)             { this.parking = parking; }
@@ -77,4 +88,5 @@ public class Reservation {
     public void setActualEntryTime(LocalDateTime actualEntryTime) { this.actualEntryTime = actualEntryTime; }
     public void setActualExitTime(LocalDateTime actualExitTime)   { this.actualExitTime = actualExitTime; }
     public void setChargedAmount(BigDecimal chargedAmount) { this.chargedAmount = chargedAmount; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

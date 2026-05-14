@@ -469,11 +469,18 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        // Sadece A Blok, B Blok, Misafir goster
-        final allowed = ['A Blok', 'B Blok', 'Misafir'];
+        // A Blok - B Blok - Misafir sirasiyla goster
+        final order = ['A Blok', 'B Blok', 'Misafir'];
         final filteredParkings = parkings.where((p) =>
-          allowed.any((a) => p.location.toLowerCase().contains(a.toLowerCase()))
+          order.any((a) => p.location.toLowerCase().contains(a.toLowerCase()))
         ).toList();
+        filteredParkings.sort((a, b) {
+          int aIdx = order.indexWhere((o) => a.location.toLowerCase().contains(o.toLowerCase()));
+          int bIdx = order.indexWhere((o) => b.location.toLowerCase().contains(o.toLowerCase()));
+          if (aIdx == -1) aIdx = 999;
+          if (bIdx == -1) bIdx = 999;
+          return aIdx.compareTo(bIdx);
+        });
         final displayParkings = filteredParkings.isNotEmpty ? filteredParkings : parkings;
 
         return Column(

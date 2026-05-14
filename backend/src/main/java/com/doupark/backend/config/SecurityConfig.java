@@ -36,6 +36,8 @@ public class SecurityConfig {
 
                 // ── Public endpoint'ler (token gerektirmez) ──────────────────────
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/parking/**").permitAll()
 
                 // Bariyer / otomat endpoint'leri (server-to-server)

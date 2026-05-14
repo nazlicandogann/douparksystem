@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -186,9 +187,28 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
+    /**
+     * Belirli bir tarih aralığı için dolu spot indislerini döner.
+     * startTime ve endTime verilirse zaman çakışması kontrolü yapar.
+     * Verilmezse şu an aktif olan (PARKED/PENDING_ENTRY) spotları döner.
+     */
     public List<Integer> getOccupiedSpotIndices(Long parkingId) {
         return reservationRepository.findByParkingId(parkingId).stream()
                 .filter(r -> "PARKED".equals(r.getStatus()) || "PENDING_ENTRY".equals(r.getStatus()))
+                .map(Reservation::getSelectedSpotIndex)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    public List<Integer> getOccupiedSpotIndicesForTime(Long parkingId, LocalDateTime startTime, LocalDateTime endTime) {
+        return reservationRepository.findByParkingId(parkingId).stream()
+                .filter(r -> "PARKED".equals(r.getStatus()) || "PENDING_ENTRY".equals(r.getStatus()))
+                .filter(r -> {
+                    // Zaman çakışması kontrolü: iki aralık çakışıyor mu?
+                    // r.start < endTime VE r.end > startTime ise çakışma var
+                    if (r.getStartTime() == null || r.getEndTime() == null) return false;
+                    return r.getStartTime().isBefore(endTime) && r.getEndTime().isAfter(startTime);
+                })
                 .map(Reservation::getSelectedSpotIndex)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

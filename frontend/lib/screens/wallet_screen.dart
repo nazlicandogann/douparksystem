@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/user_store.dart';
 import '../theme/app_colors.dart';
 
 class WalletScreen extends StatefulWidget {
@@ -53,9 +54,37 @@ class _WalletScreenState extends State<WalletScreen> {
     setState(() => isLoading = false);
 
     if (result['success'] == true) {
+      // Rozet için totalSpent güncelle
+      final prevBadgeCount = UserStore.earnedBadges.length;
+      UserStore.totalSpent += amount;
+      final newBadgeCount = UserStore.earnedBadges.length;
+
       _amountController.clear();
-      _snack('Yükleme işlemi tamamlandı');
+      _snack('Yükleme işlemi tamamlandı ✓');
       _load();
+
+      // Yeni rozet kazanıldıysa bildir
+      if (newBadgeCount > prevBadgeCount && mounted) {
+        final newBadges = UserStore.earnedBadges.skip(prevBadgeCount).toList();
+        for (final badge in newBadges) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Row(children: [
+              Text(badge.emoji, style: const TextStyle(fontSize: 20)),
+              const SizedBox(width: 10),
+              Column(crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Yeni Rozet: ${badge.title}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(badge.description,
+                    style: const TextStyle(fontSize: 12, color: Colors.white70)),
+                ]),
+            ]),
+            backgroundColor: const Color(0xFF1E3A1E),
+            duration: const Duration(seconds: 4),
+          ));
+        }
+      }
     } else {
       _snack(result['message'] ?? 'Yukleme basarisiz', error: true);
     }

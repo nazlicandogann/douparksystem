@@ -1,5 +1,6 @@
 package com.doupark.backend.controller;
 
+import com.doupark.backend.dto.ParkingRequestDTO;
 import com.doupark.backend.entity.Parking;
 import com.doupark.backend.entity.Reservation;
 import com.doupark.backend.entity.User;
@@ -14,11 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Admin Panel Endpoint'leri
- * Tüm endpoint'ler ADMIN rolü gerektirir.
- * SecurityConfig'de /api/admin/** hasRole("ADMIN") ile korunur.
- */
 @RestController
 @RequestMapping("/api/admin")
 @CrossOrigin(origins = "*")
@@ -41,14 +37,12 @@ public class AdminController {
 
     // ── KULLANICILAR ─────────────────────────────────────────────────────────
 
-    /** Tüm kullanıcıları listele */
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers(Authentication auth) {
         checkAdmin(auth);
         return ResponseEntity.ok(userRepository.findAll());
     }
 
-    /** Kullanıcı rolünü değiştir (USER ↔ ADMIN) */
     @PutMapping("/users/{id}/role")
     public ResponseEntity<?> updateUserRole(@PathVariable Long id,
                                              @RequestBody Map<String, String> body,
@@ -65,27 +59,86 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("message", "Rol güncellendi", "email", user.getEmail(), "role", newRole));
     }
 
-    /** Kullanıcı sil */
+    /**
+     * Kullanıcının ban durumunu kaldır (rezervasyon hakkını geri ver)
+     */
+    @PutMapping("/users/{id}/unban")
+    public ResponseEntity<?> unbanUser(@PathVariable Long id, Authentication auth) {
+        checkAdmin(auth);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
+        user.setReservationBanned(false);
+        user.setNoShowCount(0);
+        userRepository.save(user);
+        return ResponseEntity.ok(Map.of(
+            "message", "Rezervasyon yasağı kaldırıldı",
+            "email", user.getEmail()
+        ));
+    }
+
+    /**
+     * Kullanıcıyı manuel olarak banla
+     */
+    @PutMapping("/users/{id}/ban")
+    public ResponseEntity<?> banUser(@PathVariable Long id, Authentication auth) {
+        checkAdmin(auth);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
+        user.setReservationBanned(true);
+        userRepository.save(user);
+        return ResponseEntity.ok(Map.of(
+            "message", "Rezervasyon yasağı uygulandı",
+            "email", user.getEmail()
+        ));
+    }
+
+    /**
+     * Ban'lı kullanıcıları listele
+     */
+    @GetMapping("/users/banned")
+    public ResponseEntity<?> getBannedUsers(Authentication auth) {
+        checkAdmin(auth);
+        var banned = userRepository.findAll().stream()
+            .filter(u -> Boolean.TRUE.equals(u.getReservationBanned()))
+            .map(u -> Map.of(
+                "id", u.getId(),
+                "name", u.getName() != null ? u.getName() : "",
+                "email", u.getEmail(),
+                "noShowCount", u.getNoShowCount() != null ? u.getNoShowCount() : 0,
+                "reservationBanned", true
+            ))
+            .toList();
+        return ResponseEntity.ok(banned);
+    }
+
+    /**
+     * Bug #3 Düzeltme: Kullanıcı silinmeden önce rezervasyonları da silinir.
+     * Cascade delete yerine manuel silme - daha güvenli.
+     */
     @DeleteMapping("/users/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id, Authentication auth) {
         checkAdmin(auth);
         if (!userRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+        // Önce kullanıcının rezervasyonlarını sil
+        List<Reservation> userReservations = reservationRepository.findByUser_Id(id);
+        if (!userReservations.isEmpty()) {
+            reservationRepository.deleteAll(userReservations);
+        }
+        // Sonra kullanıcıyı sil
         userRepository.deleteById(id);
-        return ResponseEntity.ok(Map.of("message", "Kullanıcı silindi"));
+        return ResponseEntity.ok(Map.of("message", "Kullanıcı ve ilişkili rezervasyonlar silindi"));
     }
 
     // ── REZERVASYONLAR ───────────────────────────────────────────────────────
 
-    /** Tüm rezervasyonları listele */
     @GetMapping("/reservations")
     public ResponseEntity<List<Reservation>> getAllReservations(Authentication auth) {
         checkAdmin(auth);
         return ResponseEntity.ok(reservationRepository.findAll());
     }
 
-    /** Rezervasyon durumunu güncelle */
     @PutMapping("/reservations/{id}/status")
     public ResponseEntity<?> updateReservationStatus(@PathVariable Long id,
                                                       @RequestBody Map<String, String> body,
@@ -98,7 +151,6 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("message", "Durum güncellendi"));
     }
 
-    /** Rezervasyon sil */
     @DeleteMapping("/reservations/{id}")
     public ResponseEntity<?> deleteReservation(@PathVariable Long id, Authentication auth) {
         checkAdmin(auth);
@@ -111,15 +163,21 @@ public class AdminController {
 
     // ── OTOPARKLAR ───────────────────────────────────────────────────────────
 
-    /** Otopark ekle */
+    /**
+     * Bug #5 Düzeltme: Frontend'den "name" veya "parkingName" geliyorsa ikisini de handle et.
+     */
     @PostMapping("/parkings")
-    public ResponseEntity<?> addParking(@RequestBody Parking parking, Authentication auth) {
+    public ResponseEntity<?> addParking(@RequestBody ParkingRequestDTO dto, Authentication auth) {
         checkAdmin(auth);
+        Parking parking = new Parking();
+        parking.setParkingName(dto.getResolvedName());
+        parking.setCode(dto.getCode() != null ? dto.getCode() : String.valueOf(dto.getTotalSpots()));
+        parking.setStatus(dto.getStatus() != null ? dto.getStatus() : "bos");
+        parking.setTotalSpots(dto.getTotalSpots());
         Parking saved = parkingService.addParking(parking);
         return ResponseEntity.ok(saved);
     }
 
-    /** Otopark güncelle */
     @PutMapping("/parkings/{id}")
     public ResponseEntity<?> updateParking(@PathVariable Long id,
                                             @RequestBody Parking body,
@@ -135,7 +193,6 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("message", "Otopark güncellendi"));
     }
 
-    /** Otopark sil */
     @DeleteMapping("/parkings/{id}")
     public ResponseEntity<?> deleteParking(@PathVariable Long id, Authentication auth) {
         checkAdmin(auth);
@@ -146,7 +203,7 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("message", "Otopark silindi"));
     }
 
-    // ── DASHBOARD İSTATİSTİKLERİ ──────────────────────────────────────────
+    // ── DASHBOARD ─────────────────────────────────────────────────────────
 
     @GetMapping("/stats")
     public ResponseEntity<?> getStats(Authentication auth) {
@@ -155,7 +212,7 @@ public class AdminController {
         long totalReservations = reservationRepository.count();
         long totalParkings = parkingRepository.count();
         long activeReservations = reservationRepository.findAll().stream()
-                .filter(r -> "ACTIVE".equals(r.getStatus()) || "WAITING".equals(r.getStatus()))
+                .filter(r -> "ACTIVE".equals(r.getStatus()) || "PENDING_ENTRY".equals(r.getStatus()))
                 .count();
         return ResponseEntity.ok(Map.of(
                 "totalUsers", totalUsers,
