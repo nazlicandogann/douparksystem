@@ -1,4 +1,6 @@
 import 'dart:typed_data';
+import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/user_store.dart';
@@ -36,13 +38,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadVehicles() async {
     final plates = await StorageService.loadVehicles(UserStore.email);
-    // Telefon numarasını da yükle
     final phone = UserStore.email.isNotEmpty
         ? await StorageService.loadPhone(UserStore.email)
         : '';
+    final imgBase64 = UserStore.email.isNotEmpty
+        ? await StorageService.loadProfileImage(UserStore.email)
+        : null;
     if (mounted) setState(() {
       UserStore.vehicles = plates;
       if (phone.isNotEmpty) UserStore.phone = phone;
+      if (imgBase64 != null) {
+        _pickedImageBytes = base64Decode(imgBase64);
+      }
     });
   }
 
@@ -64,14 +71,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _pickImage() async {
-    // Web ve mobil uyumlu - image_picker olmadan basit implementasyon
-    // Gerçek uygulamada image_picker paketi kullanılmalı
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profil fotoğrafı özelliği yakında aktif olacak'),
-        backgroundColor: Colors.blue,
-      ),
-    );
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        withData: true,
+      );
+
+      if (result != null && result.files.single.bytes != null) {
+        final bytes = result.files.single.bytes!;
+        // Base64 olarak kalıcı kaydet
+        if (UserStore.email.isNotEmpty) {
+          final base64Str = base64Encode(bytes);
+          await StorageService.saveProfileImage(UserStore.email, base64Str);
+        }
+        if (mounted) {
+          setState(() {
+            _pickedImageBytes = bytes;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profil fotoğrafı güncellendi ✓'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Fotoğraf seçilemedi'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _saveProfile() async {

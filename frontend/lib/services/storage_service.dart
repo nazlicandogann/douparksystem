@@ -64,6 +64,17 @@ class StorageService {
   }
 
   // ── GENEL ────────────────────────────────────────────────────────────────
+  // ── PROFİL RESMİ ─────────────────────────────────────────────────────────
+  static Future<void> saveProfileImage(String email, String base64) async {
+    await init();
+    await _prefs!.setString('profileimg_$email', base64);
+  }
+
+  static Future<String?> loadProfileImage(String email) async {
+    await init();
+    return _prefs!.getString('profileimg_$email');
+  }
+
   // ── TELEFON ──────────────────────────────────────────────────────────────
   static Future<void> savePhone(String email, String phone) async {
     await init();

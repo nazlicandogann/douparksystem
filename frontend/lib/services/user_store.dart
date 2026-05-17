@@ -5,7 +5,7 @@ class UserStore {
   static String role = 'USER';
   static String userType = 'Standart Kullanıcı';
   static String savedCard = 'Henüz eklenmedi';
-  static String? profileImagePath; // web'de base64, mobilde path
+  static String? profileImageBase64; // base64 encoded resim
   static int reservationCount = 0;
   static double totalSpent = 0;
 
@@ -40,7 +40,7 @@ class UserStore {
     phone = '';
     role = 'USER';
     vehicles = [];
-    profileImagePath = null;
+    profileImageBase64 = null;
     reservationCount = 0;
     totalSpent = 0;
   }
@@ -86,7 +86,7 @@ extension UserBadgeExtension on UserBadge {
       case UserBadge.firstPark:      return 'İlk rezervasyonunu yaptın!';
       case UserBadge.regularUser:    return '5 rezervasyon tamamladın';
       case UserBadge.vipParker:      return '20 rezervasyon tamamladın';
-      case UserBadge.campusLegend:   return '50 rezervasyon - Efsane oldun! Kampüsün Sefiri :)';
+      case UserBadge.campusLegend:   return '50 rezervasyon - Efsane oldun. Kampüsün Sefiri :)';
       case UserBadge.generousWallet: return '100 TL üzeri bakiye yükledin';
       case UserBadge.goldWallet:     return '500 TL üzeri bakiye yükledin';
     }
